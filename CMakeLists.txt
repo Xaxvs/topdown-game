@@ -9,6 +9,7 @@ add_executable(
         topdown_game
         main.cpp
         raylib-nuklear.cpp 
+        editor.cpp
 )
 
 target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include lib)
