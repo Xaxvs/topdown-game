@@ -1,6 +1,16 @@
-#include <iostream>
+#include <raylib.h>
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    InitWindow(1600, 1480, "Topdown Game Time >:)");
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        EndDrawing();
+    }
+
+    CloseWindow();
+    
     return 0;
 }
