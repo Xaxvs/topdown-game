@@ -1,38 +1,38 @@
 #include "player.h"
 
-const char *player::get_display_name() const {
+const std::string& Player::GetDisplayName() const {
     return m_display_name;
 }
 
-item& player::get_shield() const {
+Item& Player::GetShield() {
     return m_shield;
 }
 
-item& player::get_weapon() const {
+Item& Player::GetWeapon() {
     return m_weapon;
 }
 
-void player::set_shield(const item& shield) const {
+void Player::SetShield(const Item& shield) {
     m_shield = shield;
 }
 
-void player::set_weapon(const item& weapon) const {
+void Player::SetWeapon(const Item& weapon) {
     m_weapon = weapon;
 }
 
-int player::get_x() const {
+int Player::GetX() const {
     return m_x;
 }
 
-int player::get_y() const {
+int Player::GetY() const {
     return m_y;
 }
 
-int player::set_x(const int value) {
+int Player::SetX(const int value) {
     return m_x = value;
 }
 
-int player::set_y(const int value) {
+int Player::SetY(const int value) {
     return m_y = value;
 }
 
@@ -42,7 +42,7 @@ int player::set_y(const int value) {
  * are on a tight schedule I'll just leave
  * it like this.
  */
-void player::update(const KeyboardKey key_pressed) {
+void Player::Update(const KeyboardKey key_pressed) {
     if(key_pressed == KEY_W) m_y += 10;
     if(key_pressed == KEY_S) m_y -= 10;
     if(key_pressed == KEY_D) m_x += 10;
