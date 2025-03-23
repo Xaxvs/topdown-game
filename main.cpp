@@ -1,7 +1,9 @@
 #include <raylib.h>
 
+
 int main() {
-    InitWindow(1600, 1480, "Topdown Game Time >:)");
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+    InitWindow(800, 600, "Topdown Game Time >:)");
 
     while (!WindowShouldClose()) {
         BeginDrawing();
