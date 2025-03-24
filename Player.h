@@ -33,14 +33,16 @@ public:
   int GetY() const;
   int SetX(int value);
   int SetY(int value);
-  void attack() const;
+  void attack();
 
 private:
+  float m_rayAngle;
   const std::string &m_display_name;
   Item m_weapon;
   Item m_shield;
   float m_x{}, m_y{}, m_velX, m_velY;
   int m_width, m_height;
+
 };
 
 #endif // PLAYER_H

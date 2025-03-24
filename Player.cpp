@@ -20,23 +20,31 @@ int Player::SetX(const int value) { return m_x = value; }
 
 int Player::SetY(const int value) { return m_y = value; }
 
-void Player::attack() const {
+void Player::attack() {
+  const float maxDistance = 100.0f;
   DrawRectangle(m_x, m_y, m_width, m_height, BLACK);
 
   Vector2 pos = GetMousePosition();
   Vector2 char_pos = {float(m_x + m_width / 2), float(m_y + m_height / 2)};
 
-  double dx = pos.x - char_pos.x;
-  double dy = pos.y - char_pos.y;
+  //double dx = pos.x - char_pos.x;
+  //double dy = pos.y - char_pos.y;
 
-  double angle = atan2(dy, dx);
+  //double angle = atan2(dy, dx);
 
   double x = char_pos.x, y = char_pos.y;
-  while(x > 0 && x < 800 && y > 0 && y < 600) {
-    x += cos(angle);
-    y += sin(angle);
+  float traveled = 0.0f;
+  while(traveled < maxDistance) {
+    x += cos(m_rayAngle); // cos(angle);
+    y += sin(m_rayAngle); // sin(angle);
     DrawRectangle(x, y, 1 , 1, BLACK);
+    // something like if(EnemyExists(x,y)) GetEnemyAtPoint(x,y).Kill();
+    traveled++;
   }
+
+  m_rayAngle += 0.001f;  // Adjust rotation speed
+  //signifies a full rotation, maybe just stop the animation or something.
+  if (m_rayAngle > 2 * PI); //m_rayAngle -= 2 * PI;
 }
 
 /*
