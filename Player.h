@@ -31,6 +31,7 @@ public:
   int GetY() const;
   int SetX(int value);
   int SetY(int value);
+  void attack() const;
 
 private:
   const std::string &m_display_name;
