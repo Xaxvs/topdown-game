@@ -53,6 +53,16 @@ private:
   void GridEdit(struct nk_context* ctx);
   void Serialize(struct nk_context* ctx);
 private:
+  enum class SerializationState {
+    Inactive, //No need to save/load anything
+    Save,
+    Load
+  };
+  SerializationState serialize_state_;
+
+  void Save(std::vector<Tile>& grid);
+  void Load(std::vector<Tile>& grid);
+private:
   struct nk_vec2 selected_;  
   struct nk_image tilesheet_;
   EditMode current_mode_;
@@ -65,6 +75,7 @@ private:
   int filepath_len_;
 
   bool active_input_;
+
 
   Camera2D camera_;
 };

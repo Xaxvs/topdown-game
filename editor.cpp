@@ -231,6 +231,23 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
       grid.resize(GetGridWidth() * GetGridHeight());
     }
   }
+
+  switch (serialize_state_) {
+    case SerializationState::Save: {
+      break;
+    }
+    case SerializationState::Load: {
+      break;    
+    }
+    case SerializationState::Inactive: {
+      break;    
+    }
+  }
+}
+
+void LevelEditor::Save(std::vector<Tile>& grid) {
+}
+void LevelEditor::Load(std::vector<Tile>& grid) {
 }
 
 void LevelEditor::Serialize(struct nk_context* ctx) {
@@ -270,10 +287,10 @@ void LevelEditor::Serialize(struct nk_context* ctx) {
     nk_layout_row_dynamic(ctx, 40.0, 2);
         
     if (nk_button_label(ctx, "Save")) {
-      
+      serialize_state_ = SerializationState::Save;      
     }
     if (nk_button_label(ctx, "Load")) {
-      
+      serialize_state_ = SerializationState::Load;      
     }
   }
   nk_end(ctx);
