@@ -1,6 +1,7 @@
 #include <raylib.h>
 
 #include "MainMenu.h"
+#include "player.h"
 
 int main() {
   SetConfigFlags(FLAG_WINDOW_HIGHDPI);
@@ -14,8 +15,12 @@ int main() {
     0, 0, 800, 600
   };
 
+  Player player("Player", 50, 50);
+  player.SetX(250);
+  player.SetY(250);
+
   while (!WindowShouldClose()) {
-    UpdateNuklear(ctx);
+    /*UpdateNuklear(ctx);
 
     if (nk_begin(ctx, "", nk_rect(0, 0, 800, 600), NK_FIXED)) {
       nk_layout_row_static(ctx, 50, 250, 3);
@@ -25,12 +30,14 @@ int main() {
 
       menu.Draw(ctx);
     }
-    nk_end(ctx);
+    nk_end(ctx);*/
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
-    DrawNuklear(ctx);
+    //DrawNuklear(ctx);
+    player.Update();
+    player.attack();
 
     EndDrawing();
   }
