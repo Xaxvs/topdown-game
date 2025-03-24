@@ -10,7 +10,7 @@ int main() {
     SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_MAXIMIZED | FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 600, "Topdown Game Time >:)");
 
-    struct nk_context* ctx = InitNuklear(12);
+    struct nk_context* ctx = InitNuklear(18);
 
     LevelEditor editor;
 
