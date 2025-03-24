@@ -18,7 +18,8 @@ enum class EditMode {
   kNone,
   kTileSelect,
   kGridEdit,
-  kPaint
+  kPaint,
+  kSerialize
 };
 
 class LevelEditor {
@@ -50,6 +51,7 @@ public:
 private:
   void TileSelect(struct nk_context* ctx);
   void GridEdit(struct nk_context* ctx);
+  void Serialize(struct nk_context* ctx);
 private:
   struct nk_vec2 selected_;  
   struct nk_image tilesheet_;
@@ -57,6 +59,12 @@ private:
 
   int grid_width_;
   int grid_height_;
+
+  std::string filepath_;
+  char filepath_buffer[256];
+  int filepath_len_;
+
+  bool active_input_;
 
   Camera2D camera_;
 };

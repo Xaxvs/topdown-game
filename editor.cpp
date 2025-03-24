@@ -16,6 +16,9 @@ LevelEditor::LevelEditor() {
   camera_.rotation = 0.0;
   camera_.zoom = 1.0;
   camera_.target = Vector2 { 0, 0 };
+  filepath_.resize(256);
+
+  active_input_ = false;
 }
 
 LevelEditor::~LevelEditor() {
@@ -23,8 +26,8 @@ LevelEditor::~LevelEditor() {
 }
 
 void LevelEditor::DrawUI(struct nk_context* ctx) {
-  DrawText("E - Tile Select, R - Edit Grid Size, T - Draw Mode", 5, 0, 24, BLACK);
-  DrawText("Middle Mouse Button - Pan, Scroll Wheel - Zoom", 5, 24, 24, BLACK);
+  DrawText("E - Tile Select, R - Edit Grid Size, T - Draw Mode, Y - Save/Load", 5, 0, 18, BLACK);
+  DrawText("Middle Mouse Button - Pan, Scroll Wheel - Zoom", 5, 18, 18, BLACK);
   switch (current_mode_) {
     case EditMode::kTileSelect: {
       TileSelect(ctx);
@@ -37,6 +40,10 @@ void LevelEditor::DrawUI(struct nk_context* ctx) {
     case EditMode::kPaint: {
       DrawText("DRAW MODE ACTIVE (LMB - Floor, RMB - Wall)", 5, 48, 24, RED);
       break;    
+    }
+    case EditMode::kSerialize: {
+      Serialize(ctx);
+      break; 
     }
     case EditMode::kNone: {
       return;    
@@ -204,6 +211,8 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
     Paint(grid);
   }
 
+  if (active_input_) return;
+
   if (IsKeyPressed(KEY_E)) {
     SetMode(EditMode::kTileSelect);
   } else if (IsKeyPressed(KEY_R)) {
@@ -212,6 +221,8 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
     SetMode(EditMode::kNone);
   } else if (IsKeyPressed(KEY_T)) {
     SetMode(EditMode::kPaint);
+  } else if (IsKeyPressed(KEY_Y)) {
+    SetMode(EditMode::kSerialize);
   }
 
   if (GetCurrentMode() == EditMode::kGridEdit) {
@@ -220,4 +231,50 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
       grid.resize(GetGridWidth() * GetGridHeight());
     }
   }
+}
+
+void LevelEditor::Serialize(struct nk_context* ctx) {
+  struct nk_rect bounds = nk_rect(0, 0, 800.0, 200.0);
+  if (nk_begin(ctx, "Save/Load", bounds, NK_WINDOW_TITLE)) {
+    nk_layout_row_dynamic(ctx, 40.0, 2);
+    nk_label(ctx, TextFormat("Filepath (Char: %d/256)", filepath_len_), NK_TEXT_ALIGN_LEFT);
+    ctx->style.edit.cursor_size = 1;
+    
+    if (nk_input_is_mouse_hovering_rect(&ctx->input, nk_widget_bounds(ctx))) {
+      if (nk_tooltip_begin(ctx, 400.0)) {
+        nk_layout_row_dynamic(ctx, 50.0, 1);
+        nk_label_wrap(ctx, "Weird graphics bug where text field doesn't render last character.");
+        nk_label_wrap(ctx, "The text below will show true output, don't worry :)");
+        nk_tooltip_end(ctx);
+      }
+    }
+    nk_flags text_edit_state = nk_edit_string(
+                                ctx,
+                                NK_EDIT_SIMPLE |
+                                NK_EDIT_SELECTABLE |
+                                NK_EDIT_CLIPBOARD |
+                                NK_EDIT_GOTO_END_ON_ACTIVATE,
+                                filepath_buffer,
+                                &filepath_len_,
+                                sizeof(filepath_buffer) - 1,
+                                nk_filter_default
+                              );    
+    
+    active_input_ = text_edit_state & NK_EDIT_ACTIVE;
+
+    filepath_ = std::string(filepath_buffer, filepath_len_);
+
+    nk_layout_row_static(ctx, 20.0, 18 * filepath_len_, 1);
+    nk_label_colored(ctx, filepath_.c_str(), NK_TEXT_ALIGN_LEFT, nk_rgb(250, 250, 250));
+
+    nk_layout_row_dynamic(ctx, 40.0, 2);
+        
+    if (nk_button_label(ctx, "Save")) {
+      
+    }
+    if (nk_button_label(ctx, "Load")) {
+      
+    }
+  }
+  nk_end(ctx);
 }
