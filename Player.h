@@ -1,8 +1,13 @@
 
 #ifndef PLAYER_H
 #define PLAYER_H
+#include "Enemies.h"
+
 #include <raylib.h>
 #include <string>
+
+
+constexpr long DEFAULT_ATTACK_COOLDOWN = 10000;
 
 enum class ItemType { SHIELD, WEAPON };
 
@@ -33,7 +38,7 @@ public:
   int GetY() const;
   int SetX(int value);
   int SetY(int value);
-  void attack();
+  void attack(Enemies& enemies);
 
 private:
   float m_rayAngle;
@@ -42,6 +47,7 @@ private:
   Item m_shield;
   float m_x{}, m_y{}, m_velX, m_velY;
   int m_width, m_height;
+  long attackCooldown{};
 
 };
 

@@ -1,3 +1,5 @@
+#include "Enemies.h"
+
 #include <raylib.h>
 
 #include "MainMenu.h"
@@ -15,9 +17,13 @@ int main() {
     0, 0, 800, 600
   };
 
+  Enemies enemies;
+
   Player player("Player", 50, 50);
   player.SetX(250);
   player.SetY(250);
+
+  enemies.addEnemy({200, 100, 20, 50, 50, GREEN});
 
   while (!WindowShouldClose()) {
     /*UpdateNuklear(ctx);
@@ -37,7 +43,9 @@ int main() {
 
     //DrawNuklear(ctx);
     player.Update();
-    player.attack();
+    player.attack(enemies);
+
+    enemies.draw();
 
     EndDrawing();
   }
