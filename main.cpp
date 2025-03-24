@@ -23,54 +23,23 @@ int main() {
     while (!WindowShouldClose()) {
         UpdateNuklear(ctx);
 
-        if (editor.GetCurrentMode() == EditMode::kNone) {
-          editor.UpdateCamera();
-        }
-
-        if (IsKeyPressed(KEY_E)) {
-          editor.SetMode(EditMode::kTileSelect);
-        } else if (IsKeyPressed(KEY_R)) {
-          editor.SetMode(EditMode::kGridEdit);
-        } else if (IsKeyPressed(KEY_ESCAPE)) {
-          editor.SetMode(EditMode::kNone);
-        }
-
-        if (editor.GetCurrentMode() == EditMode::kGridEdit) {
-          grid.resize(editor.GetGridWidth() * editor.GetGridHeight());
-        }
-        
-        editor.Draw(ctx);
-
+        editor.UpdateEditor(grid);
         
         BeginDrawing();
+        ClearBackground(RAYWHITE);
         
         BeginMode2D(editor.GetCamera());
-        ClearBackground(RAYWHITE);
-        for (int i = 0; i < grid.size(); ++i) {
-          int column = i % editor.GetGridWidth();
-          int row = i / editor.GetGridWidth();
-
-          Tile tile = grid[i];
-          int pos_x = column * 64;
-          int pos_y = row * 64;
-
-          Rectangle texture_rect;
-          texture_rect.x = tile.texture_col_;
-          texture_rect.y = tile.texture_row_;
-          texture_rect.width = 64;
-          texture_rect.height = 64;
-
-          DrawTextureRec(tilemap, texture_rect, Vector2 { (float)pos_x, (float)pos_y }, WHITE);
-        }
+        editor.DrawTileMap(grid, tilemap);
         EndMode2D();
-
+        
+        editor.DrawUI(ctx);
+        
         DrawNuklear(ctx);
 
         EndDrawing();
     }
 
     UnloadTexture(tilemap);
-    
     UnloadNuklear(ctx);
     CloseWindow();
     
