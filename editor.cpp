@@ -2,6 +2,8 @@
 
 #include <raymath.h>
 
+#include <assert.h>
+
 
 LevelEditor::LevelEditor() {
   current_mode_ = EditMode::kNone;
@@ -9,14 +11,20 @@ LevelEditor::LevelEditor() {
   selected_ = nk_vec2i(0, 0);
   grid_width_ = 1;
   grid_height_ = 1;
-  camera_ = Camera2D { Vector2 { 0.0, 0.0 }, Vector2 { 0.0, 0.0 }, 0.0, 1.0};
+  
+  camera_.offset = Vector2 { 0, 0 };
+  camera_.rotation = 0.0;
+  camera_.zoom = 1.0;
+  camera_.target = Vector2 { 0, 0 };
 }
 
 LevelEditor::~LevelEditor() {
   UnloadNuklearImage(tilesheet_);
 }
 
-void LevelEditor::Draw(struct nk_context* ctx) {
+void LevelEditor::DrawUI(struct nk_context* ctx) {
+  DrawText("E - Tile Select, R - Edit Grid Size, T - Draw Mode", 5, 0, 24, BLACK);
+  DrawText("Middle Mouse Button - Pan, Scroll Wheel - Zoom", 5, 24, 24, BLACK);
   switch (current_mode_) {
     case EditMode::kTileSelect: {
       TileSelect(ctx);
@@ -27,6 +35,7 @@ void LevelEditor::Draw(struct nk_context* ctx) {
       break;    
     }
     case EditMode::kPaint: {
+      DrawText("DRAW MODE ACTIVE (LMB - Floor, RMB - Wall)", 5, 48, 24, RED);
       break;    
     }
     case EditMode::kNone: {
@@ -75,7 +84,7 @@ void LevelEditor::TileSelect(struct nk_context* ctx) {
 }
 
 void LevelEditor::GridEdit(struct nk_context* ctx) {
-  struct nk_rect bounds = nk_rect(0, 0, 200, 200);
+  struct nk_rect bounds = nk_rect(0, 0, 400, 200);
   if (nk_begin(ctx, "Grid Edit", bounds, NK_WINDOW_TITLE)) {
     nk_layout_row_dynamic(ctx, 15, 2);
     const char* grid_width_label = TextFormat("Grid Width: %d", grid_width_);
@@ -84,6 +93,9 @@ void LevelEditor::GridEdit(struct nk_context* ctx) {
     const char* grid_height_label = TextFormat("Grid Height: %d", grid_height_);
     nk_label(ctx, grid_height_label, NK_TEXT_ALIGN_LEFT);
     nk_slider_int(ctx, 1, &grid_height_, 100, 1);
+    
+    nk_layout_row_static(ctx, 10, 350, 1);
+    nk_label(ctx, "Press Enter to Clear and Resize", NK_TEXT_CENTERED);
   }
   nk_end(ctx);
 }
@@ -125,4 +137,87 @@ void LevelEditor::UpdateCamera(void) {
 
 Camera2D LevelEditor::GetCamera(void) const {
   return camera_;
+}
+
+void LevelEditor::Paint(std::vector<Tile>& grid) {
+  Vector2 mouse_pos = GetMousePosition();  
+  
+  mouse_pos.x *= GetWindowScaleDPI().x;
+  mouse_pos.y *= GetWindowScaleDPI().y;
+  
+  Vector2 world_pos = GetScreenToWorld2D(mouse_pos, camera_);
+
+  int size = kGridSize;
+
+  int col = (int)(world_pos.x / size);
+  int row = (int)(world_pos.y / size);
+
+  if (col < 0 || col >= grid_width_ || row < 0 || row >= grid_height_) {
+    return;
+  }
+  
+  int i = row * grid_width_ + col;
+  if (i < 0 && i >= grid.size()) {
+    return;
+  }
+  if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+    grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, false };
+  } else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+    grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, true };
+  }
+}
+
+void LevelEditor::DrawTileMap(const std::vector<Tile>& grid, Texture2D tilemap) const {
+  DrawRectangle(0, 0, GetGridWidth() * kGridSize, GetGridHeight() * kGridSize, GRAY);
+
+  for (int i = 0; i < grid.size(); ++i) {
+    int column = i % GetGridWidth();
+    int row = i / GetGridWidth();
+
+    Tile tile = grid[i];
+    int pos_x = column * kGridSize;
+    int pos_y = row * kGridSize;
+
+    Rectangle texture_rect;
+    texture_rect.x = tile.texture_col_ * kGridSize;
+    texture_rect.y = tile.texture_row_ * kGridSize;
+    texture_rect.width = kGridSize;
+    texture_rect.height = kGridSize;
+
+    Rectangle dest_rect;
+    dest_rect.x = pos_x;
+    dest_rect.y = pos_y;
+    dest_rect.width = kGridSize;
+    dest_rect.height = kGridSize;
+  
+    Color tint = tile.is_wall_ ? GREEN : WHITE;
+    DrawTexturePro(tilemap, texture_rect, dest_rect, Vector2{ 0.0, 0.0 }, 0.0, tint);
+  }
+}
+
+void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
+  if (GetCurrentMode() == EditMode::kNone) {
+    UpdateCamera();
+  }
+  if (GetCurrentMode() == EditMode::kPaint) {
+    UpdateCamera();
+    Paint(grid);
+  }
+
+  if (IsKeyPressed(KEY_E)) {
+    SetMode(EditMode::kTileSelect);
+  } else if (IsKeyPressed(KEY_R)) {
+    SetMode(EditMode::kGridEdit);
+  } else if (IsKeyPressed(KEY_ESCAPE)) {
+    SetMode(EditMode::kNone);
+  } else if (IsKeyPressed(KEY_T)) {
+    SetMode(EditMode::kPaint);
+  }
+
+  if (GetCurrentMode() == EditMode::kGridEdit) {
+    if (IsKeyPressed(KEY_ENTER)) {
+      grid.clear();
+      grid.resize(GetGridWidth() * GetGridHeight());
+    }
+  }
 }

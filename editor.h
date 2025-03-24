@@ -4,10 +4,15 @@
 #include <raylib-nuklear.h>
 #include <raylib.h>
 
+#include <vector>
+
+#include "Tile.h"
+
 constexpr size_t kNumFramesHorizontal = 14;
 constexpr size_t kNumFramesVertical = 11;
-constexpr float kSpriteWidth = 63;
-constexpr float kSpriteHeight = 65;
+constexpr size_t kSpriteWidth = 63;
+constexpr size_t kSpriteHeight = 65;
+constexpr size_t kGridSize = 64;
 
 enum class EditMode {
   kNone,
@@ -22,7 +27,14 @@ public:
   ~LevelEditor();
 
   void SetMode(EditMode mode);
-  void Draw(struct nk_context* ctx);
+  
+  void DrawUI(struct nk_context* ctx);
+
+  //Draw Tilemap that is being edited
+  void DrawTileMap(const std::vector<Tile>& grid, Texture2D tilemap) const;
+
+  //Updates editor state based on input
+  void UpdateEditor(std::vector<Tile>& grid);
 
   int GetGridWidth(void) const;
   int GetGridHeight(void) const;
@@ -30,6 +42,8 @@ public:
   int GetSelectedRow(void) const;
 
   EditMode GetCurrentMode(void) const;
+
+  void Paint(std::vector<Tile>& grid);
   
   void UpdateCamera(void);
   Camera2D GetCamera(void) const;
