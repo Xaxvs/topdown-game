@@ -22,39 +22,39 @@ int Player::SetX(const int value) { return x_ = value; }
 int Player::SetY(const int value) { return y_ = value; }
 
 void Player::Attack(Enemies& enemies) {
-  if(attack_cooldown_ <= 0 && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-    if (ray_angle_ > 2 * PI) {
+
+  Vector2 char_pos = {float(x_ + width_ / 2), float(y_ - height_ / 2)};
+  Vector2 mouse_pos = GetMousePosition();
+  float target_angle = std::atan2(char_pos.y - mouse_pos.y , char_pos.x - mouse_pos.x);
+
+  if (attack_cooldown_ <= 0 && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+
+    if (ray_angle_ > target_angle + PI / 4) {
       attack_cooldown_ = kDefaultAttackCooldown;
-      ray_angle_ = 0;
+      ray_angle_ = target_angle - PI / 4;
       return;
     }
 
     constexpr float maxDistance = 100.0f;
-    Vector2 char_pos = {float(x_ + width_ / 2), float(y_ + height_ / 2)};
-
-    double x = char_pos.x, y = char_pos.y;
+    float x = char_pos.x, y = char_pos.y;
     float traveled = 0.0f;
-    while(traveled < maxDistance) {
-      x += cos(ray_angle_);
-      y += sin(ray_angle_);
-      DrawRectangle(x, y, 2 , 2, BLACK);
+    while (traveled < maxDistance) {
+      x -= std::cos(ray_angle_);
+      y -= std::sin(ray_angle_);
+      DrawRectangle(x, y, 2, 2, BLACK);
 
-      if(auto enemy = enemies.GetEnemyAt(x,y); enemy.has_value()){
+      if (auto enemy = enemies.GetEnemyAt(x, y); enemy.has_value()) {
         enemies.AttackEnemy(enemy.value(), GetWeapon().damage_, x_, y_);
         attack_cooldown_ = kDefaultAttackCooldown;
-        ray_angle_ = 0;
-        return;
       }
       traveled++;
     }
-
-    ray_angle_ += 0.01f;
-  }else if(IsMouseButtonUp(MOUSE_BUTTON_LEFT) && ray_angle_ > 1 && ray_angle_ < 2* PI) {
+    ray_angle_ += 0.009;
+  } else if(IsMouseButtonUp(MOUSE_BUTTON_LEFT) && ray_angle_ > 0.4) {
     attack_cooldown_ = kDefaultAttackCooldown;
     ray_angle_ = 0;
   }
-
-  attack_cooldown_-= GetFrameTime();
+  attack_cooldown_ -= GetFrameTime();
 }
 
 /*
@@ -64,17 +64,16 @@ void Player::Attack(Enemies& enemies) {
  * it like this.
  */
 void Player::Update() {
+  Vector2 mouse_pos = GetMousePosition();
+  float target_angle = atan2(mouse_pos.y - y_ + height_ / 2 , mouse_pos.x - x_ + width_ / 2);
 
-  DrawRectangle(x_, y_, width_, height_, BLACK);
+  if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+    x_ += std::cos(target_angle) * 0.2f;
+    y_ += std::sin(target_angle) * 0.2f;
+  }
 
-  vel_x_ = 0;
-  vel_y_ = 0;
-
-  if (IsKeyDown(KEY_W)) vel_y_ = -0.25;
-  if (IsKeyDown(KEY_S)) vel_y_ = 0.25;
-  if (IsKeyDown(KEY_D)) vel_x_ = 0.25;
-  if (IsKeyDown(KEY_A)) vel_x_ = -0.25;
-
-  x_ += vel_x_;
-  y_ += vel_y_;
+  DrawRectanglePro({x_ + width_ / 2, y_ - height_ / 2, float(width_), float(height_)},
+                   {float(width_) / 2, float(height_) / 2},
+                   target_angle * (180 / PI),
+                   BLACK);
 }

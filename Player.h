@@ -22,10 +22,12 @@ class Player {
 
 public:
 
-  explicit Player(const std::string &display_name, int width, int height)
-      : display_name_(display_name), width_(width), height_(height),
-        weapon_({"Default Knife", 10, 5, ItemType::WEAPON}),
-        shield_({"Default Chestplate", 5, 5, ItemType::SHIELD}) {}
+  explicit Player(const std::string &display_name, int width, int height):
+  display_name_(display_name),
+  weapon_({"Default Knife", 10, 5, ItemType::WEAPON}),
+  shield_({"Default Chestplate", 5, 5, ItemType::SHIELD}),
+  width_(width),
+  height_(height){}
 
 public:
   const std::string &GetDisplayName() const;
@@ -41,11 +43,11 @@ public:
   void Attack(Enemies& enemies);
 
 private:
-  float ray_angle_;
+  float ray_angle_{};
   const std::string &display_name_;
   Item weapon_;
   Item shield_;
-  float x_{}, y_{}, vel_x_, vel_y_;
+  float x_{}, y_{}, vel_x_{}, vel_y_{};
   int width_, height_;
   float attack_cooldown_{};
 
