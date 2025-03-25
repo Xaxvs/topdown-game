@@ -20,6 +20,7 @@ int main() {
     Texture2D tilemap = LoadTexture("../assets/kenney_scribble-dungeons/Tilesheet/tilesheet.png");
     SetExitKey(-1);
 
+
     while (!WindowShouldClose()) {
         UpdateNuklear(ctx);
 
@@ -29,7 +30,8 @@ int main() {
         ClearBackground(RAYWHITE);
         
         BeginMode2D(editor.GetCamera());
-        editor.DrawTileMap(grid, tilemap);
+        editor.DrawTileMap(grid, tilemap);        
+        
         EndMode2D();
         
         editor.DrawUI(ctx);
