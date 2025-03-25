@@ -71,7 +71,7 @@ private:
   int grid_height_;
 
   std::string filepath_;
-  char filepath_buffer[256];
+  char filepath_buffer_[256];
   int filepath_len_;
 
   bool active_input_;

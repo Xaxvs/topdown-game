@@ -340,15 +340,15 @@ void LevelEditor::Serialize(struct nk_context* ctx) {
                                 NK_EDIT_SELECTABLE |
                                 NK_EDIT_CLIPBOARD |
                                 NK_EDIT_GOTO_END_ON_ACTIVATE,
-                                filepath_buffer,
+                                filepath_buffer_,
                                 &filepath_len_,
-                                sizeof(filepath_buffer) - 1,
+                                sizeof(filepath_buffer_) - 1,
                                 nk_filter_default
                               );    
     
     active_input_ = text_edit_state & NK_EDIT_ACTIVE;
 
-    filepath_ = std::string(filepath_buffer, filepath_len_);
+    filepath_ = std::string(filepath_buffer_, filepath_len_);
 
     nk_layout_row_static(ctx, 20.0, 18 * filepath_len_, 1);
     nk_label_colored(ctx, filepath_.c_str(), NK_TEXT_ALIGN_LEFT, nk_rgb(250, 250, 250));
