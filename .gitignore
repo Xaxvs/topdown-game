@@ -55,4 +55,4 @@ cmake-build-debug/
 
 .cache/**
 build/**
-lib/**
+lib/raylib
