@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "Tile.h"
+#include "tile.h"
 
 constexpr size_t kNumFramesHorizontal = 14;
 constexpr size_t kNumFramesVertical = 11;

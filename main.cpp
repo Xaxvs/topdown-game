@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "Tile.h"
+#include "tile.h"
 #include "editor.h"
 
 int main() {
