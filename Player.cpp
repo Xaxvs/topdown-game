@@ -40,7 +40,7 @@ void Player::Attack(Enemies& enemies) {
       DrawRectangle(x, y, 2 , 2, BLACK);
 
       if(auto enemy = enemies.GetEnemyAt(x,y); enemy.has_value()){
-        enemies.AttackEnemy(enemy.value(), GetWeapon().damage_);
+        enemies.AttackEnemy(enemy.value(), GetWeapon().damage_, x_, y_);
         attack_cooldown_ = kDefaultAttackCooldown;
         ray_angle_ = 0;
         return;

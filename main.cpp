@@ -23,7 +23,7 @@ int main() {
   player.SetX(250);
   player.SetY(250);
 
-  enemies.AddEnemy({200, 100, 20, 50, 50, GREEN});
+  enemies.AddEnemy({200, 100, 0, 0, 20, 50, 50, GREEN});
 
   while (!WindowShouldClose()) {
     /*UpdateNuklear(ctx);

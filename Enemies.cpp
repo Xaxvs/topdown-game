@@ -1,6 +1,10 @@
 
 #include "Enemies.h"
 
+#include <cmath>
+
+constexpr float kKnockbackForce = 5.0f;
+
 std::vector<Enemy>& Enemies::GetEnemies() {
   return m_enemies;
 }
@@ -27,17 +31,31 @@ void Enemies::KillEnemy(const Enemy* enemy) {
   //death animation or something
 }
 
-void Enemies::AttackEnemy(Enemy* enemy, const int damage) {
+void Enemies::AttackEnemy(Enemy* enemy, const int damage, float p_x, float p_y) {
   enemy->health_-=damage;
 
-  //play sounds and animations, push enemy back using velocity += 10?
-  // continuially
+  //play sounds and animations
+  float dx = enemy->x_ - p_x;
+  float dy = enemy->x_ - p_y;
+  float angle = std::atan2(dy, dx);
+
+  enemy->vel_x_ += std::cos(angle) * kKnockbackForce;
+  enemy->vel_y_ += std::sin(angle) * kKnockbackForce;
 
   if(enemy->health_ <= 0) KillEnemy(enemy);
 }
 
 void Enemies::Draw() {
-  for(const auto &[x_, y_, health_, width_, height_, color_, speed_] : m_enemies) {
+  for(auto &[x_, y_, vel_x_, vel_y_, health_, width_, height_, color_, speed_] : m_enemies) {
+
+    x_ += vel_x_;
+    y_ += vel_y_;
+
+    vel_x_ *= 0.95f;
+    vel_y_ *= 0.95f;
+
+    if (std::fabs(vel_x_) < 0.01f) vel_x_ = 0;
+    if (std::fabs(vel_y_) < 0.01f) vel_y_ = 0;
 
     std:std::pmr::string str = "HP: ";
     str.append(std::to_string(health_));

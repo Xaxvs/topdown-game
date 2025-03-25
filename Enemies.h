@@ -13,7 +13,7 @@
 #include <vector>
 
 struct Enemy {
-  float x_, y_;
+  float x_, y_, vel_x_, vel_y_;
   int health_;
   float width_, height_;
   Color color_;
@@ -33,7 +33,7 @@ public:
 
   void KillEnemy(const Enemy* enemy);
 
-  void AttackEnemy(Enemy* enemy, int damage);
+  void AttackEnemy(Enemy* enemy, int damage, float p_x, float p_y);
 
   void Draw();
 
