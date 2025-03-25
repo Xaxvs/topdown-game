@@ -1,65 +1,60 @@
-#include "player.h"
+#include "Player.h"
 
 #include <cmath>
+#include <iostream>
 
-const std::string &Player::GetDisplayName() const { return m_display_name; }
+const std::string &Player::GetDisplayName() const { return display_name_; }
 
-Item &Player::GetShield() { return m_shield; }
+Item &Player::GetShield() { return shield_; }
 
-Item &Player::GetWeapon() { return m_weapon; }
+Item &Player::GetWeapon() { return weapon_; }
 
-void Player::SetShield(const Item &shield) { m_shield = shield; }
+void Player::SetShield(const Item &shield) { shield_ = shield; }
 
-void Player::SetWeapon(const Item &weapon) { m_weapon = weapon; }
+void Player::SetWeapon(const Item &weapon) { weapon_ = weapon; }
 
-int Player::GetX() const { return m_x; }
+int Player::GetX() const { return x_; }
 
-int Player::GetY() const { return m_y; }
+int Player::GetY() const { return y_; }
 
-int Player::SetX(const int value) { return m_x = value; }
+int Player::SetX(const int value) { return x_ = value; }
 
-int Player::SetY(const int value) { return m_y = value; }
+int Player::SetY(const int value) { return y_ = value; }
 
-void Player::attack(Enemies& enemies) {
-  if(attackCooldown <= 0 && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-    if (m_rayAngle > 2 * PI) {
-      attackCooldown = DEFAULT_ATTACK_COOLDOWN;
-      m_rayAngle = 0;
+void Player::Attack(Enemies& enemies) {
+  if(attack_cooldown_ <= 0 && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+    if (ray_angle_ > 2 * PI) {
+      attack_cooldown_ = kDefaultAttackCooldown;
+      ray_angle_ = 0;
       return;
     }
+
     constexpr float maxDistance = 100.0f;
-
-    Vector2 pos = GetMousePosition();
-    Vector2 char_pos = {float(m_x + m_width / 2), float(m_y + m_height / 2)};
-
-    //double dx = pos.x - char_pos.x;
-    //double dy = pos.y - char_pos.y;
-
-    //double angle = atan2(dy, dx);
+    Vector2 char_pos = {float(x_ + width_ / 2), float(y_ + height_ / 2)};
 
     double x = char_pos.x, y = char_pos.y;
     float traveled = 0.0f;
     while(traveled < maxDistance) {
-      x += cos(m_rayAngle); // cos(angle);
-      y += sin(m_rayAngle); // sin(angle);
-      DrawRectangle(x, y, 1 , 1, BLACK);
+      x += cos(ray_angle_);
+      y += sin(ray_angle_);
+      DrawRectangle(x, y, 2 , 2, BLACK);
 
-
-      if(auto enemy = enemies.getEnemyAt(x,y); enemy.has_value()){
-        enemies.kill(enemy.value());
+      if(auto enemy = enemies.GetEnemyAt(x,y); enemy.has_value()){
+        enemies.AttackEnemy(enemy.value(), GetWeapon().damage_);
+        attack_cooldown_ = kDefaultAttackCooldown;
+        ray_angle_ = 0;
+        return;
       }
-      // something like if(EnemyExists(x,y)) GetEnemyAtPoint(x,y).Kill();
       traveled++;
     }
 
-    m_rayAngle += 0.01f;  // Adjust rotation speed
-    //signifies a full rotation, maybe just stop the animation or something.
-    //m_rayAngle -= 2 * PI;
-  }else if(IsMouseButtonUp(MOUSE_BUTTON_LEFT) && m_rayAngle > 1 && m_rayAngle < 2* PI) {
-    attackCooldown = DEFAULT_ATTACK_COOLDOWN;
-    m_rayAngle = 0;
+    ray_angle_ += 0.01f;
+  }else if(IsMouseButtonUp(MOUSE_BUTTON_LEFT) && ray_angle_ > 1 && ray_angle_ < 2* PI) {
+    attack_cooldown_ = kDefaultAttackCooldown;
+    ray_angle_ = 0;
   }
-  attackCooldown--;
+
+  attack_cooldown_-= GetFrameTime();
 }
 
 /*
@@ -70,16 +65,16 @@ void Player::attack(Enemies& enemies) {
  */
 void Player::Update() {
 
-  DrawRectangle(m_x, m_y, m_width, m_height, BLACK);
+  DrawRectangle(x_, y_, width_, height_, BLACK);
 
-  m_velX = 0;
-  m_velY = 0;
+  vel_x_ = 0;
+  vel_y_ = 0;
 
-  if (IsKeyDown(KEY_W)) m_velY = -0.25;
-  if (IsKeyDown(KEY_S)) m_velY = 0.25;
-  if (IsKeyDown(KEY_D)) m_velX = 0.25;
-  if (IsKeyDown(KEY_A)) m_velX = -0.25;
+  if (IsKeyDown(KEY_W)) vel_y_ = -0.25;
+  if (IsKeyDown(KEY_S)) vel_y_ = 0.25;
+  if (IsKeyDown(KEY_D)) vel_x_ = 0.25;
+  if (IsKeyDown(KEY_A)) vel_x_ = -0.25;
 
-  m_x += m_velX;
-  m_y += m_velY;
+  x_ += vel_x_;
+  y_ += vel_y_;
 }

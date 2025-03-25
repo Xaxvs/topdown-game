@@ -28,8 +28,8 @@ public:
       DrawTextureRec(m_texture, m_rect, {m_x, m_y}, m_color);
     } else {
       DrawRectangleRec(m_rect, m_color);
-      DrawText(m_text, /*std::abs(m_x - m_rect.width) / 2*/ m_x,
-               /*std::abs(m_y - m_rect.height) / 2*/ m_y, m_font_size,
+      DrawText(m_text, /*std::abs(x_ - m_rect.width) / 2*/ m_x,
+               /*std::abs(y_ - m_rect.height) / 2*/ m_y, m_font_size,
                m_text_color);
     }
   }

@@ -4,9 +4,12 @@
 
 #ifndef ENEMIES_H
 #define ENEMIES_H
+
 #include <algorithm>
 #include <optional>
 #include <raylib.h>
+#include <regex>
+#include <string>
 #include <vector>
 
 struct Enemy {
@@ -15,7 +18,6 @@ struct Enemy {
   float width_, height_;
   Color color_;
   float speed_;
-
 };
 
 class Enemies {
@@ -23,38 +25,17 @@ class Enemies {
 public:
   Enemies() : m_enemies(std::vector<Enemy>()) {};
 
-  const std::vector<Enemy>& getEnemies() const {
-    return m_enemies;
-  }
+  std::vector<Enemy>& GetEnemies();
 
-  void addEnemy(const Enemy& enemy) {
-    m_enemies.push_back(enemy);
-  }
+  void AddEnemy(const Enemy& enemy);
 
-  std::optional<const Enemy*> getEnemyAt(const float x, const float y) const {
-    for(const Enemy& enemy : getEnemies()) {
-      if (x >= enemy.x_ && x <= enemy.x_ + enemy.width_ &&
-        y >= enemy.y_ && y <= enemy.y_ + enemy.height_) {
-        return &enemy;
-        }
-    }
-    return std::nullopt;
-  }
+  std::optional<Enemy*> GetEnemyAt(float x, float y);
 
-  void kill(const Enemy* enemy) {
-    m_enemies.erase(std::remove_if(m_enemies.begin(), m_enemies.end(),
-        [enemy](const Enemy& e) { return &e == enemy; }),
-        m_enemies.end());
+  void KillEnemy(const Enemy* enemy);
 
-    //death animation or something
-  }
+  void AttackEnemy(Enemy* enemy, int damage);
 
-  void draw() {
-    for(const auto &[x_, y_, health_, width_, height_, color_, speed_] : m_enemies) {
-      DrawText("HP: " + health_, x_ + width_ / 2 , y_ - 10, 10, BLACK);
-      DrawRectangle(x_, y_, width_, height_, color_);
-    }
-  }
+  void Draw();
 
 private:
   std::vector<Enemy> m_enemies{};

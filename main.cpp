@@ -3,7 +3,7 @@
 #include <raylib.h>
 
 #include "MainMenu.h"
-#include "player.h"
+#include "Player.h"
 
 int main() {
   SetConfigFlags(FLAG_WINDOW_HIGHDPI);
@@ -23,7 +23,7 @@ int main() {
   player.SetX(250);
   player.SetY(250);
 
-  enemies.addEnemy({200, 100, 20, 50, 50, GREEN});
+  enemies.AddEnemy({200, 100, 20, 50, 50, GREEN});
 
   while (!WindowShouldClose()) {
     /*UpdateNuklear(ctx);
@@ -43,9 +43,9 @@ int main() {
 
     //DrawNuklear(ctx);
     player.Update();
-    player.attack(enemies);
+    player.Attack(enemies);
 
-    enemies.draw();
+    enemies.Draw();
 
     EndDrawing();
   }

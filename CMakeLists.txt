@@ -6,12 +6,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 add_executable(topdown_game main.cpp
-        player.h
-        player.cpp
+        Player.h
+        Player.cpp
         MainMenu.h
-        button.h
+        Button.h
         raylib-nuklear.cpp
         Enemies.h
+        Enemies.cpp
 )
 
 target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include lib)

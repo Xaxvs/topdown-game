@@ -7,7 +7,7 @@
 #include <string>
 
 
-constexpr long DEFAULT_ATTACK_COOLDOWN = 10000;
+constexpr long kDefaultAttackCooldown = 1;
 
 enum class ItemType { SHIELD, WEAPON };
 
@@ -23,9 +23,9 @@ class Player {
 public:
 
   explicit Player(const std::string &display_name, int width, int height)
-      : m_display_name(display_name), m_width(width), m_height(height),
-        m_weapon({"Default Knife", 10, 5, ItemType::WEAPON}),
-        m_shield({"Default Chestplate", 5, 5, ItemType::SHIELD}) {}
+      : display_name_(display_name), width_(width), height_(height),
+        weapon_({"Default Knife", 10, 5, ItemType::WEAPON}),
+        shield_({"Default Chestplate", 5, 5, ItemType::SHIELD}) {}
 
 public:
   const std::string &GetDisplayName() const;
@@ -38,16 +38,16 @@ public:
   int GetY() const;
   int SetX(int value);
   int SetY(int value);
-  void attack(Enemies& enemies);
+  void Attack(Enemies& enemies);
 
 private:
-  float m_rayAngle;
-  const std::string &m_display_name;
-  Item m_weapon;
-  Item m_shield;
-  float m_x{}, m_y{}, m_velX, m_velY;
-  int m_width, m_height;
-  long attackCooldown{};
+  float ray_angle_;
+  const std::string &display_name_;
+  Item weapon_;
+  Item shield_;
+  float x_{}, y_{}, vel_x_, vel_y_;
+  int width_, height_;
+  float attack_cooldown_{};
 
 };
 
