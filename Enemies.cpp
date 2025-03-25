@@ -36,7 +36,7 @@ void Enemies::AttackEnemy(Enemy* enemy, const int damage, float p_x, float p_y) 
 
   //play sounds and animations
   float dx = enemy->x_ - p_x;
-  float dy = enemy->x_ - p_y;
+  float dy = enemy->y_ - p_y;
   float angle = std::atan2(dy, dx);
 
   enemy->vel_x_ += std::cos(angle) * kKnockbackForce;
