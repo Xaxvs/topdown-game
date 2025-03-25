@@ -2,6 +2,9 @@
 
 #include <raymath.h>
 
+#include <fstream>
+#include <sstream>
+
 #include <assert.h>
 
 
@@ -96,10 +99,10 @@ void LevelEditor::GridEdit(struct nk_context* ctx) {
     nk_layout_row_dynamic(ctx, 15, 2);
     const char* grid_width_label = TextFormat("Grid Width: %d", grid_width_);
     nk_label(ctx, grid_width_label, NK_TEXT_ALIGN_LEFT);
-    nk_slider_int(ctx, 1, &grid_width_, 100, 1);
+    nk_slider_int(ctx, 1, &grid_width_, 500, 1);
     const char* grid_height_label = TextFormat("Grid Height: %d", grid_height_);
     nk_label(ctx, grid_height_label, NK_TEXT_ALIGN_LEFT);
-    nk_slider_int(ctx, 1, &grid_height_, 100, 1);
+    nk_slider_int(ctx, 1, &grid_height_, 500, 1);
     
     nk_layout_row_static(ctx, 10, 350, 1);
     nk_label(ctx, "Press Enter to Clear and Resize", NK_TEXT_CENTERED);
@@ -200,6 +203,29 @@ void LevelEditor::DrawTileMap(const std::vector<Tile>& grid, Texture2D tilemap) 
     Color tint = tile.is_wall_ ? GREEN : WHITE;
     DrawTexturePro(tilemap, texture_rect, dest_rect, Vector2{ 0.0, 0.0 }, 0.0, tint);
   }
+
+  if (current_mode_ == EditMode::kPaint) {
+    int row = GetSelectedRow();
+    int column = GetSelectedColumn();
+
+    Rectangle source;
+    source.x = row * kGridSize;
+    source.y = column * kGridSize;
+    source.width = kGridSize;
+    source.height = kGridSize;
+  
+    Rectangle dest;
+    dest.x = GetMouseX() * GetWindowScaleDPI().x;
+    dest.y = GetMouseY() * GetWindowScaleDPI().y;
+    dest.width = kGridSize;
+    dest.height = kGridSize;
+
+    Vector2 world = GetScreenToWorld2D(Vector2 { dest.x, dest.y }, GetCamera());
+    dest.x = world.x - kGridSize * 0.5;
+    dest.y = world.y - kGridSize * 0.5;
+
+    DrawTexturePro(tilemap, source, dest, Vector2{0.0, 0.0}, 0.0, ColorAlpha(WHITE, 0.5));
+  }
 }
 
 void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
@@ -234,9 +260,13 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
 
   switch (serialize_state_) {
     case SerializationState::Save: {
+      Save(grid);
+      serialize_state_ = SerializationState::Inactive;
       break;
     }
     case SerializationState::Load: {
+      Load(grid);
+      serialize_state_ = SerializationState::Inactive;
       break;    
     }
     case SerializationState::Inactive: {
@@ -245,9 +275,48 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
   }
 }
 
-void LevelEditor::Save(std::vector<Tile>& grid) {
+void LevelEditor::Save(const std::vector<Tile>& grid) {
+  std::ofstream file(filepath_);
+  if (!file.is_open()) {
+    TraceLog(LOG_ERROR, "Unable to open [%s]", filepath_.c_str());
+    return;
+  }
+
+  file << TextFormat("%d %d\n", grid_width_, grid_height_);
+  for (const Tile& tile : grid) {
+    file << TextFormat("%d %d %d\n", tile.texture_col_, tile.texture_row_, tile.is_wall_);
+  }
+
+  file.close();
+  TraceLog(LOG_INFO, "Saved to file successfully [%s].", filepath_.c_str());
 }
 void LevelEditor::Load(std::vector<Tile>& grid) {
+  std::fstream file(filepath_);
+  if (!file.is_open()) {
+    TraceLog(LOG_ERROR, "Unable to open [%s]", filepath_.c_str());
+    return;
+  }
+
+  std::string line;
+  
+  std::getline(file, line);
+  std::istringstream input(line);
+
+  input >> grid_width_ >> grid_height_;
+  
+  grid.clear();
+  while (std::getline(file, line)) {
+    input = std::istringstream(line);
+    
+    int column = 0;
+    int row = 0;
+    bool is_wall = false;
+    
+    input >> column >> row >> is_wall;
+    grid.emplace_back(Tile { row, column, is_wall });
+  }
+
+  TraceLog(LOG_INFO, "Loaded level successfully [%s]", filepath_.c_str());
 }
 
 void LevelEditor::Serialize(struct nk_context* ctx) {

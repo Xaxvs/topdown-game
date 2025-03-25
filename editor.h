@@ -60,7 +60,7 @@ private:
   };
   SerializationState serialize_state_;
 
-  void Save(std::vector<Tile>& grid);
+  void Save(const std::vector<Tile>& grid);
   void Load(std::vector<Tile>& grid);
 private:
   struct nk_vec2 selected_;  
