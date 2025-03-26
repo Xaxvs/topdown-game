@@ -13,6 +13,7 @@ add_executable(topdown_game main.cpp
         raylib-nuklear.cpp
         Enemies.h
         Enemies.cpp
+        WindowManager.h
 )
 
 target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include lib)

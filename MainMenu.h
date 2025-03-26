@@ -2,6 +2,7 @@
 #ifndef MAIN_MENU_H
 #define MAIN_MENU_H
 #include <iostream>
+#include <utility>
 #include <raylib-nuklear.h>
 
 #include "Button.h"
@@ -9,43 +10,107 @@
 class MainMenu {
 
 public:
-  MainMenu() = default;
+  MainMenu(nk_context *ctx, bool& draw_window) : ctx_(ctx), draw_window_(draw_window) {}
 
   void Draw(nk_context *ctx) {
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_text(ctx, "Topdown-Game", 13, NK_TEXT_ALIGN_CENTERED);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    if (nk_button_label(ctx, "PLAY"))
-      OnPlayClick();
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    if (nk_button_label(ctx, "SETTINGS"))
-      OnSettingsClick();
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    nk_spacer(ctx);
-    if (nk_button_label(ctx, "CREDITS"))
-      OnCreditsClick();
+    if(!draw_window_) return;
+    if(menu_enabled_) DrawMainMenu();
+    if(settings_enabled) DrawSettings();
+    if(credits_enabled_) DrawCredits();
+    if(htp_enabled) DrawHTP();
   }
 
 private:
-  void OnCreditsClick() { std::cout << "CREDITS"; }
 
-  void OnPlayClick() { std::cout << "PLAY"; }
+  void DrawMainMenu() {
+    DrawSpacer(4);
+    nk_text(ctx_, "Topdown-Game", 13, NK_TEXT_ALIGN_CENTERED);
+    DrawSpacer(5);
+    if (nk_button_label(ctx_, "PLAY")) {
+      OnPlayClick();
+      draw_window_ = false;
+    }
+    DrawSpacer(5);
+    if (nk_button_label(ctx_, "SETTINGS"))
+      OnSettingsClick();
+    DrawSpacer(5);
+    if (nk_button_label(ctx_, "CREDITS"))
+      OnCreditsClick();
+    DrawSpacer(5);
+    if(nk_button_label(ctx_, "How To Play"))
+      OnHTPClick();
+  }
 
-  void OnSettingsClick() { std::cout << "SETTINGS"; }
+  void DrawSettings() {
+    DrawSpacer(4);
+    nk_text_colored(ctx_, "Settings", 13, NK_TEXT_ALIGN_CENTERED, ColorToNuklear(BLACK));
+    DrawSpacer(5);
+    nk_text_colored(ctx_, "No settings for you >:D", 20, NK_TEXT_ALIGN_LEFT, ColorToNuklear(BLACK));
+    DrawSpacer(16);
+    if (nk_button_label(ctx_, "BACK TO MENU"))
+      BackToMenuClick(settings_enabled);
+  }
+
+  void DrawCredits() {
+    DrawSpacer(4);
+    nk_text_colored(ctx_, "Credits", 13, NK_TEXT_ALIGN_CENTERED, ColorToNuklear(BLACK));
+    DrawSpacer(5);
+    nk_text_colored(ctx_, "Xaxis and Logos", 20, NK_TEXT_ALIGN_LEFT, ColorToNuklear(BLACK));
+    DrawSpacer(16);
+    if (nk_button_label(ctx_, "BACK TO MENU"))
+      BackToMenuClick(credits_enabled_);
+  }
+
+  void DrawHTP() {
+    DrawSpacer(4);
+    nk_text_colored(ctx_, "How To Play", 13, NK_TEXT_ALIGN_CENTERED, ColorToNuklear(BLACK));
+    DrawSpacer(5);
+    nk_text_colored(ctx_, "IDK", 20, NK_TEXT_ALIGN_LEFT, ColorToNuklear(BLACK));
+    DrawSpacer(16);
+    if (nk_button_label(ctx_, "BACK TO MENU"))
+      BackToMenuClick(htp_enabled);
+  }
+
+  void DrawSpacer(const int amount) const {
+    for(int i = 0; i < amount; i++) {
+      nk_spacer(ctx_);
+    }
+  }
+
+  void OnCreditsClick() {
+    menu_enabled_ = false;
+    credits_enabled_ = true;
+  }
+
+  void OnPlayClick() {
+    draw_window_ = false;
+    menu_enabled_ = false;
+  }
+
+  void OnSettingsClick() {
+    menu_enabled_ = false;
+    settings_enabled = true;
+  }
+
+  void OnHTPClick() {
+    menu_enabled_ = false;
+    htp_enabled = true;
+  }
+
+  void BackToMenuClick(bool& menu) {
+    menu = false;
+    menu_enabled_ = true;
+    draw_window_ = true;
+  }
+
+private:
+  bool menu_enabled_ = true;
+  bool credits_enabled_ = false;
+  bool settings_enabled = false;
+  bool htp_enabled = false;
+  nk_context* ctx_;
+  bool& draw_window_;
+
 };
 
 #endif // MAIN_MENU_H
