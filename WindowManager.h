@@ -26,7 +26,7 @@ public:
       nk_command_buffer *buf = nk_window_get_canvas(ctx_);
 
       nk_draw_image(buf, rect_, &img_, ColorToNuklear(WHITE));
-      main_menu_.Draw(ctx_);
+      main_menu_.Draw();
     }
     nk_end(ctx_);
 

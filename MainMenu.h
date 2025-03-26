@@ -12,7 +12,7 @@ class MainMenu {
 public:
   MainMenu(nk_context *ctx, bool& draw_window) : ctx_(ctx), draw_window_(draw_window) {}
 
-  void Draw(nk_context *ctx) {
+  void Draw() {
     if(!draw_window_) return;
     if(menu_enabled_) DrawMainMenu();
     if(settings_enabled) DrawSettings();
