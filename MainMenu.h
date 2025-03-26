@@ -17,7 +17,6 @@ public:
     if(menu_enabled_) DrawMainMenu();
     if(settings_enabled) DrawSettings();
     if(credits_enabled_) DrawCredits();
-    if(htp_enabled) DrawHTP();
   }
 
 private:
@@ -36,9 +35,6 @@ private:
     DrawSpacer(5);
     if (nk_button_label(ctx_, "CREDITS"))
       OnCreditsClick();
-    DrawSpacer(5);
-    if(nk_button_label(ctx_, "How To Play"))
-      OnHTPClick();
   }
 
   void DrawSettings() {
@@ -55,20 +51,10 @@ private:
     DrawSpacer(4);
     nk_text_colored(ctx_, "Credits", 13, NK_TEXT_ALIGN_CENTERED, ColorToNuklear(BLACK));
     DrawSpacer(5);
-    nk_text_colored(ctx_, "Xaxis and Logos", 20, NK_TEXT_ALIGN_LEFT, ColorToNuklear(BLACK));
+    nk_text_colored(ctx_, "Xaxis and Logos and Pigon", 20, NK_TEXT_ALIGN_LEFT, ColorToNuklear(BLACK));
     DrawSpacer(16);
     if (nk_button_label(ctx_, "BACK TO MENU"))
       BackToMenuClick(credits_enabled_);
-  }
-
-  void DrawHTP() {
-    DrawSpacer(4);
-    nk_text_colored(ctx_, "How To Play", 13, NK_TEXT_ALIGN_CENTERED, ColorToNuklear(BLACK));
-    DrawSpacer(5);
-    nk_text_colored(ctx_, "IDK", 20, NK_TEXT_ALIGN_LEFT, ColorToNuklear(BLACK));
-    DrawSpacer(16);
-    if (nk_button_label(ctx_, "BACK TO MENU"))
-      BackToMenuClick(htp_enabled);
   }
 
   void DrawSpacer(const int amount) const {
@@ -92,11 +78,6 @@ private:
     settings_enabled = true;
   }
 
-  void OnHTPClick() {
-    menu_enabled_ = false;
-    htp_enabled = true;
-  }
-
   void BackToMenuClick(bool& menu) {
     menu = false;
     menu_enabled_ = true;
@@ -107,7 +88,6 @@ private:
   bool menu_enabled_ = true;
   bool credits_enabled_ = false;
   bool settings_enabled = false;
-  bool htp_enabled = false;
   nk_context* ctx_;
   bool& draw_window_;
 
