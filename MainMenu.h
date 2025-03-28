@@ -1,11 +1,8 @@
 
 #ifndef MAIN_MENU_H
 #define MAIN_MENU_H
-#include <iostream>
-#include <utility>
-#include <raylib-nuklear.h>
 
-#include "Button.h"
+#include <raylib-nuklear.h>
 
 class MainMenu {
 
@@ -17,6 +14,10 @@ public:
     if(menu_enabled_) DrawMainMenu();
     if(settings_enabled) DrawSettings();
     if(credits_enabled_) DrawCredits();
+  }
+
+  bool& GetMenuValue() {
+    return menu_enabled_;
   }
 
 private:

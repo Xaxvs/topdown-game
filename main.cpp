@@ -2,14 +2,16 @@
 
 #include <raylib.h>
 
-#include "MainMenu.h"
+
 #include "Player.h"
 #include "WindowManager.h"
+
+static int fontSize = 25;
 
 int main() {
   SetConfigFlags(FLAG_WINDOW_HIGHDPI);
   InitWindow(800, 600, "Topdown Game Time >:)");
-  nk_context *ctx = InitNuklear(25);
+  nk_context *ctx = InitNuklear(fontSize);
   auto windowManager = WindowManager(ctx);
 
   Enemies enemies;
@@ -20,18 +22,27 @@ int main() {
 
   enemies.AddEnemy({200, 100, 0, 0, 20, 50, 50, GREEN});
 
+  Pause& pauseMenu = windowManager.GetPauseMenu();
+
   while (!WindowShouldClose()) {
     windowManager.Update();
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
-    if(windowManager.DrawWindow()) {
-      DrawNuklear(ctx);
-    }else {
-      player.Update();
-      player.Attack(enemies);
+    if(GetKeyPressed() == KEY_P) {
+      pauseMenu.SetPaused(!pauseMenu.IsPaused());
+    }
 
+    if(windowManager.DrawWindow() || windowManager.GetPauseMenu().IsPaused()) {
+      DrawNuklear(ctx);
+      EndDrawing();
+      continue;
+    }
+
+    if(!pauseMenu.IsPaused()) {
+      player.Attack(enemies);
+      player.Update();
       enemies.Draw();
     }
 

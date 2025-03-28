@@ -46,7 +46,7 @@ void Enemies::AttackEnemy(Enemy* enemy, const int damage, float p_x, float p_y) 
 }
 
 void Enemies::Draw() {
-  for(auto &[x_, y_, vel_x_, vel_y_, health_, width_, height_, color_, speed_] : m_enemies) {
+  for(auto &[x_, y_, vel_x_, vel_y_, health_, width_, height_, color_, _] : m_enemies) {
 
     x_ += vel_x_;
     y_ += vel_y_;

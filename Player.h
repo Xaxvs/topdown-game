@@ -2,6 +2,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "Enemies.h"
+#include "Pause.h"
 
 #include <raylib.h>
 #include <string>

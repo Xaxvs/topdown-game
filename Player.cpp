@@ -1,5 +1,7 @@
 #include "Player.h"
 
+#include "Pause.h"
+
 #include <cmath>
 #include <iostream>
 
@@ -64,7 +66,7 @@ void Player::Attack(Enemies& enemies) {
  * it like this.
  */
 void Player::Update() {
-  Vector2 mouse_pos = GetMousePosition();
+  Vector2 mouse_pos =  GetMousePosition();
   float target_angle = atan2(mouse_pos.y - y_ + height_ / 2 , mouse_pos.x - x_ + width_ / 2);
 
   if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {

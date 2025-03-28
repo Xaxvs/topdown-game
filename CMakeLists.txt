@@ -14,6 +14,8 @@ add_executable(topdown_game main.cpp
         Enemies.h
         Enemies.cpp
         WindowManager.h
+        Pause.h
+        Pause.cpp
 )
 
 target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include lib)
