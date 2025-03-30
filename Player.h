@@ -21,7 +21,7 @@ struct Item {
 
 class Player {
 public:
-  Player(const std::string &display_name, int width, int height);
+  Player(b2WorldId world, const std::string &display_name, int width, int height);
 public:
   const std::string& GetDisplayName() const;
   void Update();
@@ -42,6 +42,9 @@ private:
   Rectangle player_texture_;
   Rectangle hand_texture_;
 
+  b2BodyId player_body_;
+  b2ShapeId player_shape_;
+
   
   float ray_angle_{};
   std::string display_name_;
@@ -53,6 +56,7 @@ private:
   Vector2 velocity_;
 
   float target_angle_;
+  float current_angle_;
   
   int width_, height_;
   float attack_cooldown_{};
