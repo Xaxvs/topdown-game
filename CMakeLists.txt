@@ -12,6 +12,7 @@ add_executable(
         editor.cpp
         Player.cpp
         units.cpp
+        physics_world.cpp
         Enemies.cpp
 )
 

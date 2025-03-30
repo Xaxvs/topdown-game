@@ -10,6 +10,8 @@
 #include "tile.h"
 #include "editor.h"
 #include "units.h"
+#include "physics_world.h"
+
 #include "Player.h"
 
 int main() {
@@ -28,46 +30,24 @@ int main() {
     Texture2D tilemap = LoadTexture("../assets/kenney_scribble-dungeons/Tilesheet/tilesheet.png");
     SetExitKey(-1);
     
-    b2WorldDef world_def = b2DefaultWorldDef();
-    world_def.gravity = b2Vec2_zero;
-
-    b2WorldId world = b2CreateWorld(&world_def);
+    PhysicsWorld physics;
     
-    Player player(world, "Steve", 64, 64);
+    Player player(physics.GetWorld(), "Steve", 64, 64);
 
     editor.Load("dummy2.txt", grid);
     int grid_width = editor.GetGridWidth();
     int grid_height = editor.GetGridHeight();
+    
+    physics.UpdateWalls(grid, grid_width);
 
-    std::vector<b2BodyId> bodies;
     std::vector<std::tuple<b2ShapeId, b2BodyId>> balls;
     
-    for (int i = 0; i < grid.size(); ++i) {
-        int x = i % grid_width;
-        int y = i / grid_width;
-
-        Tile tile = grid[i];
-        if (!tile.is_wall_) continue;
-        
-        b2BodyDef body_def = b2DefaultBodyDef();
-        body_def.position = b2Vec2 { (float)x + 0.5f, (float)y + 0.5f };
-        b2BodyId wall = b2CreateBody(world, &body_def);
-
-        float size = kGridSize * kPixelToMeter * 0.5f;
-        
-        b2Polygon wall_box = b2MakeSquare(size);
-        b2ShapeDef shape_def = b2DefaultShapeDef();
-        b2CreatePolygonShape(wall, &shape_def, &wall_box);
-
-        bodies.push_back(wall);
-    }
-
     float radius = 10.0f;
 
     while (!WindowShouldClose()) {
         UpdateNuklear(ctx);
 
-        b2World_Step(world, 1.0 / 60.0, 4);
+        physics.Update();
 
         editor.UpdateEditor(grid);
         if (IsKeyDown(KEY_SPACE)) {
@@ -82,7 +62,7 @@ int main() {
             body_def.type = b2BodyType::b2_dynamicBody;
             body_def.position = b2Add(pos, b2MulSV(kPixelToMeter, dir));
 
-            b2BodyId body = b2CreateBody(world, &body_def);
+            b2BodyId body = b2CreateBody(physics.GetWorld(), &body_def);
 
             b2ShapeDef shape_def = b2DefaultShapeDef();
             shape_def.density = 0.1;
@@ -132,7 +112,7 @@ int main() {
 
         player.Draw(tilemap);
         
-        for (auto& [shape, body]: balls) {
+        for (auto& [shape, body] : balls) {
             b2Vec2 pos = b2Body_GetPosition(body);
             float r = b2Shape_GetCircle(shape).radius * kMeterToPixel;
             DrawCircle(pos.x * kMeterToPixel, pos.y * kMeterToPixel, r, ColorBrightness(RED, r / 25.0));
@@ -147,8 +127,6 @@ int main() {
         EndDrawing();
     }
     
-    b2DestroyWorld(world);
-
     UnloadTexture(tilemap);
     UnloadNuklear(ctx);
     CloseWindow();
