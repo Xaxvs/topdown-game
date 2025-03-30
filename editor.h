@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "tile.h"
+#include "physics_world.h"
 
 constexpr size_t kNumFramesHorizontal = 14;
 constexpr size_t kNumFramesVertical = 11;
@@ -24,7 +25,7 @@ enum class EditMode {
 
 class LevelEditor {
 public:
-  LevelEditor();
+  LevelEditor(PhysicsWorld* world);
   ~LevelEditor();
 
   void SetMode(EditMode mode);
@@ -77,6 +78,7 @@ private:
 
   bool active_input_;
 
+  PhysicsWorld* physics_;
 
   Camera2D camera_;
 };

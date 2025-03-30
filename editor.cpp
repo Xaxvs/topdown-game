@@ -8,7 +8,7 @@
 #include <assert.h>
 
 
-LevelEditor::LevelEditor() {
+LevelEditor::LevelEditor(PhysicsWorld* world) {
   current_mode_ = EditMode::kNone;
   tilesheet_ = LoadNuklearImage("../assets/kenney_scribble-dungeons/Tilesheet/tilesheet.png");
   selected_ = nk_vec2i(0, 0);
@@ -22,6 +22,9 @@ LevelEditor::LevelEditor() {
   filepath_.resize(256);
 
   active_input_ = false;
+
+  assert(world != nullptr);
+  physics_ = world;
 }
 
 LevelEditor::~LevelEditor() {
@@ -173,8 +176,12 @@ void LevelEditor::Paint(std::vector<Tile>& grid) {
   }
   
   if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+    if (grid.at(i).is_wall_) {
+      physics_->DestroyWall(i);
+    }
     grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, false };
   } else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+    physics_->AddWall(i, GetGridWidth());
     grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, true };
   }
 }
@@ -257,6 +264,7 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
     if (IsKeyPressed(KEY_ENTER)) {
       grid.clear();
       grid.resize(GetGridWidth() * GetGridHeight());
+      physics_->UpdateWalls(grid, GetGridWidth());
     }
   }
 
@@ -296,7 +304,7 @@ void LevelEditor::Save(const std::vector<Tile>& grid) {
 void LevelEditor::Load(const std::string& filename, std::vector<Tile>& grid) {
   std::fstream file(filename);
   if (!file.is_open()) {
-    TraceLog(LOG_ERROR, "Unable to open [%s]", filepath_.c_str());
+    TraceLog(LOG_ERROR, "Unable to open [%s]", filename.c_str());
     return;
   }
 
@@ -320,6 +328,8 @@ void LevelEditor::Load(const std::string& filename, std::vector<Tile>& grid) {
   }
 
   TraceLog(LOG_INFO, "Loaded level successfully [%s]", filepath_.c_str());
+  
+  physics_->UpdateWalls(grid, grid_width_);
 }
 
 void LevelEditor::Serialize(struct nk_context* ctx) {
