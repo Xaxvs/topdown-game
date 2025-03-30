@@ -11,6 +11,7 @@ add_executable(
         raylib-nuklear.cpp 
         editor.cpp
         Player.cpp
+        units.cpp
         Enemies.cpp
 )
 
