@@ -1,11 +1,7 @@
 #include <raylib.h>
 #include <raylib-nuklear.h>
 
-#include <box2d/box2d.h>
-#include <box2d/math_functions.h>
-
 #include <vector>
-
 
 #include "tile.h"
 #include "editor.h"
@@ -22,24 +18,22 @@ int main() {
 
     struct nk_context* ctx = InitNuklear(18);
 
-    LevelEditor editor;
-
-    std::vector<Tile> grid;
-    grid.resize(1);
-
     Texture2D tilemap = LoadTexture("../assets/kenney_scribble-dungeons/Tilesheet/tilesheet.png");
     SetExitKey(-1);
     
     PhysicsWorld physics;
+        
+    LevelEditor editor(&physics);
     
-    Player player(physics.GetWorld(), "Steve", 64, 64);
-
-    editor.Load("dummy2.txt", grid);
+    std::vector<Tile> grid;
+    grid.resize(1);
+    
+    editor.Load("dummylevel.txt", grid);
     int grid_width = editor.GetGridWidth();
     int grid_height = editor.GetGridHeight();
     
-    physics.UpdateWalls(grid, grid_width);
-
+    Player player(physics.GetWorld(), "Steve", 64, 64);
+        
     std::vector<std::tuple<b2ShapeId, b2BodyId>> balls;
     
     float radius = 10.0f;
@@ -86,29 +80,29 @@ int main() {
         ClearBackground(RAYWHITE);
         
         BeginMode2D(editor.GetCamera());
-        // editor.DrawTileMap(grid, tilemap);        
+        editor.DrawTileMap(grid, tilemap);        
 
-        for (int i = 0; i < grid.size(); ++i) {
-            Tile tile = grid[i];
-            int x = i % grid_width;
-            int y = i / grid_width;
+        // for (int i = 0; i < grid.size(); ++i) {
+        //     Tile tile = grid[i];
+        //     int x = i % grid_width;
+        //     int y = i / grid_width;
 
-            Rectangle source {
-                (float)tile.texture_col_ * kGridSize,
-                (float)tile.texture_row_ * kGridSize,
-                kGridSize,
-                kGridSize
-            };
+        //     Rectangle source {
+        //         (float)tile.texture_col_ * kGridSize,
+        //         (float)tile.texture_row_ * kGridSize,
+        //         kGridSize,
+        //         kGridSize
+        //     };
 
-            Rectangle dest {
-               (float)x * kGridSize,
-               (float)y * kGridSize,
-               kGridSize,
-               kGridSize
-            };
+        //     Rectangle dest {
+        //        (float)x * kGridSize,
+        //        (float)y * kGridSize,
+        //        kGridSize,
+        //        kGridSize
+        //     };
 
-            DrawTexturePro(tilemap, source, dest, Vector2 { 0.0, 0.0 }, 0.0f, WHITE);
-        }
+        //     DrawTexturePro(tilemap, source, dest, Vector2 { 0.0, 0.0 }, 0.0f, WHITE);
+        // }
 
         player.Draw(tilemap);
         
