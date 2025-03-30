@@ -14,6 +14,6 @@ add_executable(
         Enemies.cpp
 )
 
-target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include lib)
-target_link_directories(topdown_game PUBLIC lib/raylib/raylib)
-target_link_libraries(topdown_game raylib winmm)
+target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include box2d/include lib)
+target_link_directories(topdown_game PUBLIC lib/raylib/raylib lib)
+target_link_libraries(topdown_game raylib winmm box2d)
