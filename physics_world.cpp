@@ -23,23 +23,34 @@ void PhysicsWorld::UpdateWalls(const std::vector<Tile>& grid, int map_width) {
     if (WallExists(i) && !tile.is_wall_) {
       DestroyWall(i);
       continue;
-    } else if (WallExists(i) || !tile.is_wall_) continue;
+    } else if (!tile.is_wall_) continue;
 
-    int x = i % map_width;
-    int y = i / map_width;
-
-    b2BodyDef body_def = b2DefaultBodyDef();
-    body_def.position = b2Vec2 { (float)x + 0.5f, (float)y + 0.5f };
-    b2BodyId wall = b2CreateBody(world_, &body_def);
-
-    float size = kGridSize * kPixelToMeter * 0.5f;
-    
-    b2Polygon wall_box = b2MakeSquare(size);
-    b2ShapeDef shape_def = b2DefaultShapeDef();
-    b2CreatePolygonShape(wall, &shape_def, &wall_box);
-
-    walls_.insert(std::make_pair(i, wall));
+    AddWall(i, map_width);
   }
+}
+
+
+void PhysicsWorld::AddWall(int index, int map_width) {
+  if (WallExists(index)) return;
+  
+  int x = index % map_width;
+  int y = index / map_width;
+
+  b2BodyDef body_def = b2DefaultBodyDef();
+
+  //specify offset because raylib renders top left (rectangles) while box2d expects coordinate
+  // to be center of object
+  body_def.position = b2Vec2 { (float)x + 0.5f, (float)y + 0.5f };
+  
+  float size = kGridSize * kPixelToMeter * 0.5f;
+    
+  b2BodyId wall = b2CreateBody(world_, &body_def);
+  
+  b2Polygon wall_box = b2MakeSquare(size);
+  b2ShapeDef shape_def = b2DefaultShapeDef();
+  b2CreatePolygonShape(wall, &shape_def, &wall_box);
+
+  walls_.insert(std::make_pair(index, wall));
 }
 
 void PhysicsWorld::DestroyWall(int index) {

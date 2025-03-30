@@ -17,6 +17,9 @@ public:
 
   void Update(void) const;
 
+  //Will add a wall if it doesn't already exist
+  void AddWall(int index, int map_width);
+  
   void DestroyWall(int index);
   bool WallExists(int index) const;
 private:
