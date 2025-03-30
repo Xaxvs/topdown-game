@@ -48,6 +48,8 @@ public:
   
   void UpdateCamera(void);
   Camera2D GetCamera(void) const;
+  
+  void Load(const std::string& filename, std::vector<Tile>& grid);
 private:
   void TileSelect(struct nk_context* ctx);
   void GridEdit(struct nk_context* ctx);
@@ -61,7 +63,6 @@ private:
   SerializationState serialize_state_;
 
   void Save(const std::vector<Tile>& grid);
-  void Load(std::vector<Tile>& grid);
 private:
   struct nk_vec2 selected_;  
   struct nk_image tilesheet_;

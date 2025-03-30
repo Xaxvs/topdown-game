@@ -111,7 +111,8 @@ void LevelEditor::GridEdit(struct nk_context* ctx) {
 }
 
 
-void LevelEditor::SetMode(EditMode mode) {
+
+void LevelEditor::LevelEditor::SetMode(EditMode mode)  {
   current_mode_ = mode;
 }
 
@@ -167,9 +168,10 @@ void LevelEditor::Paint(std::vector<Tile>& grid) {
   }
   
   int i = row * grid_width_ + col;
-  if (i < 0 && i >= grid.size()) {
+  if (i < 0 || i >= grid.size()) {
     return;
   }
+  
   if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
     grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, false };
   } else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
@@ -245,7 +247,7 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
     SetMode(EditMode::kGridEdit);
   } else if (IsKeyPressed(KEY_ESCAPE)) {
     SetMode(EditMode::kNone);
-  } else if (IsKeyPressed(KEY_T)) {
+  } else if (IsKeyPressed(KEY_T)) {    
     SetMode(EditMode::kPaint);
   } else if (IsKeyPressed(KEY_Y)) {
     SetMode(EditMode::kSerialize);
@@ -265,7 +267,7 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
       break;
     }
     case SerializationState::Load: {
-      Load(grid);
+      Load(filepath_, grid);
       serialize_state_ = SerializationState::Inactive;
       break;    
     }
@@ -290,8 +292,9 @@ void LevelEditor::Save(const std::vector<Tile>& grid) {
   file.close();
   TraceLog(LOG_INFO, "Saved to file successfully [%s].", filepath_.c_str());
 }
-void LevelEditor::Load(std::vector<Tile>& grid) {
-  std::fstream file(filepath_);
+
+void LevelEditor::Load(const std::string& filename, std::vector<Tile>& grid) {
+  std::fstream file(filename);
   if (!file.is_open()) {
     TraceLog(LOG_ERROR, "Unable to open [%s]", filepath_.c_str());
     return;
