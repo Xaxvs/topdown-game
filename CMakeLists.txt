@@ -11,6 +11,7 @@ add_executable(
         raylib-nuklear.cpp 
         editor.cpp
         Player.cpp
+        Enemies.cpp
 )
 
 target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include lib)

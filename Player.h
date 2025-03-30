@@ -2,11 +2,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "Enemies.h"
-#include "Pause.h"
 
 #include <raylib.h>
 #include <string>
-
 
 constexpr long kDefaultAttackCooldown = 1;
 
@@ -20,35 +18,29 @@ struct Item {
 };
 
 class Player {
-
 public:
-
-  explicit Player(const std::string &display_name, int width, int height):
-  display_name_(display_name),
-  weapon_({"Default Knife", 10, 5, ItemType::WEAPON}),
-  shield_({"Default Chestplate", 5, 5, ItemType::SHIELD}),
-  width_(width),
-  height_(height){}
-
+  Player(const std::string &display_name, int width, int height);
 public:
-  const std::string &GetDisplayName() const;
+  const std::string& GetDisplayName() const;
   void Update();
-  Item &GetWeapon();
-  Item &GetShield();
-  void SetWeapon(const Item &weapon);
-  void SetShield(const Item &shield);
-  int GetX() const;
-  int GetY() const;
-  int SetX(int value);
-  int SetY(int value);
+  Item& GetWeapon();
+  Item& GetShield();
+  void SetWeapon(const Item& weapon);
+  void SetShield(const Item& shield);
   void Attack(Enemies& enemies);
 
+  void SetPosition(Vector2 position);
+  Vector2 GetPosition() const;
 private:
   float ray_angle_{};
-  const std::string &display_name_;
+  std::string display_name_;
+  
   Item weapon_;
   Item shield_;
-  float x_{}, y_{}, vel_x_{}, vel_y_{};
+  
+  Vector2 position_;
+  Vector2 velocity_;
+  
   int width_, height_;
   float attack_cooldown_{};
 
