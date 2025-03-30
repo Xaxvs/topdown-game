@@ -8,6 +8,24 @@ Player::Player(const std::string& display_name, int width, int height) {
   shield_ = Item { "Default Chestplate", 10, 5, ItemType::SHIELD };
   width_ = width;
   height_ = height;
+
+  constexpr size_t kGridSize = 64;
+  
+  player_texture_ = Rectangle {
+    0,
+    kGridSize * 8,
+    kGridSize,
+    kGridSize  
+  };
+
+  hand_texture_ = Rectangle {
+    kGridSize,
+    kGridSize * 8,
+    kGridSize,
+    kGridSize  
+  };
+
+  target_angle_ = 0.0f;
 }
 
 const std::string& Player::GetDisplayName() const { return display_name_; }
@@ -61,27 +79,80 @@ void Player::Attack(Enemies& enemies) {
 
 void Player::Update() {
   Vector2 mouse_pos =  GetMousePosition();
-  float target_angle = atan2(
-                         mouse_pos.y - position_.y + (float)height_ / 2,
-                         mouse_pos.x - position_.x + (float)width_ / 2
+  target_angle_ = atan2(
+                         mouse_pos.y - (position_.y + (float)height_ / 2.0),
+                         mouse_pos.x - (position_.x + (float)width_ / 2.0)
                        );
 
   if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-    position_.x += std::cos(target_angle) * 0.2f;
-    position_.y += std::sin(target_angle) * 0.2f;
-  }
+    position_.x += std::cos(target_angle_) * 100.0f * GetFrameTime();
+    position_.y += std::sin(target_angle_) * 100.0f * GetFrameTime();
+  }  
+}
 
+void Player::Draw(Texture2D tilemap) {
   Rectangle player_rect = {
-    position_.x + (float)width_ / 2,
-    position_.y - (float)height_ / 2,
+    position_.x,
+    position_.y,
     (float)width_,
     (float)height_
   };
   
-  DrawRectanglePro(
+  DrawTexturePro(
+    tilemap,
+    player_texture_,
     player_rect,
     { (float)width_ / 2, (float)height_ / 2 },
-    target_angle * (180 / PI),
-    BLACK
+    target_angle_ * RAD2DEG,
+    WHITE
   );
+
+  float half_width = (float)width_ / 2;
+  float half_height= (float)width_ / 2;
+
+  Rectangle r_hand_rect {
+    position_.x - half_width,
+    position_.y - half_height,
+    (float)width_,
+    (float)height_
+  };
+
+  r_hand_rect.x += cosf(target_angle_ + PI/2) * 30.0;
+  r_hand_rect.y += sin(target_angle_ + PI/2) * 30.0;
+  
+  DrawTexturePro(
+    tilemap,
+    hand_texture_,
+    r_hand_rect,
+    {0.0, 0.0},
+    0.0,
+    WHITE
+  );
+  
+  Rectangle l_hand_rect {
+    position_.x - half_width,
+    position_.y - half_height,
+    (float)width_,
+    (float)height_
+  };
+
+  l_hand_rect.x -= cosf(target_angle_ + PI/2) * 30.0;
+  l_hand_rect.y -= sin(target_angle_ + PI/2) * 30.0;
+  
+  DrawTexturePro(
+    tilemap,
+    hand_texture_,
+    l_hand_rect,
+    {0.0, 0.0},
+    0.0,
+    WHITE
+  );
+}
+
+float Player::GetHeading(void) const {
+  return target_angle_;
+}
+
+Vector2 Player::GetPosition() const {
+  return position_;
 }
