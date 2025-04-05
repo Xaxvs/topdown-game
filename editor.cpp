@@ -299,7 +299,7 @@ void LevelEditor::DrawTileMap(const std::vector<Tile>& grid, Texture2D tilemap) 
     dest_rect.width = kGridSize;
     dest_rect.height = kGridSize;
   
-    Color tint = tile.is_wall_ ? GREEN : WHITE;
+    Color tint = tile.is_wall_ && current_mode_ == EditMode::kPaint ? GREEN : WHITE;
     DrawTexturePro(tilemap, texture_rect, dest_rect, Vector2{ 0.0, 0.0 }, 0.0, tint);
   }
 
@@ -448,7 +448,7 @@ void LevelEditor::Load(const std::string& filename, std::vector<Tile>& grid) {
     grid.emplace_back(Tile { row, column, is_wall });
   }
 
-  TraceLog(LOG_INFO, "Loaded level successfully [%s]", filepath_.c_str());
+  TraceLog(LOG_INFO, "Loaded level successfully [%s]", filename.c_str());
   
   physics_->UpdateWalls(grid, grid_width_);
 }
