@@ -65,6 +65,9 @@ private:
 
   void Save(const std::vector<Tile>& grid);
 private:
+  std::optional<Vector2> box_select_anchor_;
+  bool is_box_select_;
+private:
   struct nk_vec2 selected_;  
   struct nk_image tilesheet_;
   EditMode current_mode_;

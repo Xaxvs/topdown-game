@@ -25,6 +25,9 @@ LevelEditor::LevelEditor(PhysicsWorld* world) {
 
   assert(world != nullptr);
   physics_ = world;
+  filepath_len_ = 0;
+
+  box_select_anchor_ = {};
 }
 
 LevelEditor::~LevelEditor() {
@@ -45,6 +48,7 @@ void LevelEditor::DrawUI(struct nk_context* ctx) {
     }
     case EditMode::kPaint: {
       DrawText("DRAW MODE ACTIVE (LMB - Floor, RMB - Wall)", 5, 48, 24, RED);
+      DrawText("Ctrl -> Box Draw", 5, 72, 24, RED);
       break;    
     }
     case EditMode::kSerialize: {
@@ -153,6 +157,51 @@ Camera2D LevelEditor::GetCamera(void) const {
   return camera_;
 }
 
+std::vector<Vector2> GetBoxRegion(Vector2 start, Vector2 end, int map_width, int map_height) {
+  std::vector<Vector2> region;
+  
+  int x_dif = end.x - start.x;
+  int y_dif = end.y - start.y;
+
+  int start_x = start.x;
+  int start_y = start.y;
+
+  int end_x = start.x + x_dif;
+  int end_y = start.y + y_dif;
+
+  if (x_dif < 0) {
+    end_x = start_x;
+    start_x += x_dif;
+  }
+  if (y_dif < 0) {
+    end_y = start_y;
+    start_y += y_dif;
+  }
+
+  for (int x = start_x; x <= end_x; ++x) {
+    for (int y = start_y; y <= end_y; ++y) {  
+      if (x < 0 || x >= map_width || y < 0 || y >= map_height) {
+        continue;
+      }
+      region.push_back(Vector2 { (float)x, (float)y });
+    }
+  }
+
+  return region;
+}
+
+Vector2 GetMouseGridPos(Camera2D camera) {
+  Vector2 mouse;
+  mouse.x = GetMouseX() * GetWindowScaleDPI().x;
+  mouse.y = GetMouseY() * GetWindowScaleDPI().y;
+  mouse = GetScreenToWorld2D(mouse, camera);
+
+  mouse.x = floorf(mouse.x / kGridSize);
+  mouse.y = floorf(mouse.y / kGridSize);
+
+  return mouse;
+}
+
 void LevelEditor::Paint(std::vector<Tile>& grid) {
   Vector2 mouse_pos = GetMousePosition();  
   
@@ -174,8 +223,49 @@ void LevelEditor::Paint(std::vector<Tile>& grid) {
   if (i < 0 || i >= grid.size()) {
     return;
   }
+
+  if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (is_box_select_) {
+      if (!box_select_anchor_.has_value()) {
+        box_select_anchor_ = Vector2 { (float)col, (float)row };
+        return;
+      } else {
+        std::vector<Vector2> box = GetBoxRegion(
+                                     box_select_anchor_.value(),
+                                     GetMouseGridPos(camera_),
+                                     grid_width_,
+                                     grid_height_
+                                   );
+        for (Vector2 tile : box) {
+          int i = tile.y * grid_width_ + tile.x;
+          grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, false };
+        }
+      }
+      is_box_select_ = false;
+      physics_->UpdateWalls(grid, grid_width_);
+    }
+  }
   
-  if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+  if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
+    if (box_select_anchor_.has_value()) {    
+      std::vector<Vector2> box = GetBoxRegion(
+                                   box_select_anchor_.value(),
+                                   GetMouseGridPos(camera_),
+                                   grid_width_,
+                                   grid_height_
+                                 );
+      for (Vector2 tile : box) {
+        int i = tile.y * grid_width_ + tile.x;
+        grid.at(i) = Tile { (int)selected_.x, (int)selected_.y, true };
+      }
+      is_box_select_ = false;
+      physics_->UpdateWalls(grid, grid_width_);
+    }
+  }
+  
+  if (is_box_select_) return;
+    
+  if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {        
     if (grid.at(i).is_wall_) {
       physics_->DestroyWall(i);
     }
@@ -222,7 +312,32 @@ void LevelEditor::DrawTileMap(const std::vector<Tile>& grid, Texture2D tilemap) 
     source.y = column * kGridSize;
     source.width = kGridSize;
     source.height = kGridSize;
-  
+
+    if (box_select_anchor_.has_value()) {
+      Vector2 pos = box_select_anchor_.value();
+
+      Vector2 mouse = GetMouseGridPos(camera_);
+
+      std::vector<Vector2> region = GetBoxRegion(pos, mouse, grid_width_, grid_height_);
+
+      Color color = ColorAlpha(SKYBLUE, 0.9);
+      for (Vector2 tile : region) {
+        DrawTexturePro(
+          tilemap,
+          source,
+          Rectangle {
+            tile.x * kGridSize,
+            tile.y * kGridSize,
+            kGridSize,
+            kGridSize
+          },
+          Vector2Zero(),
+          0.0f,
+          color
+        );
+      }
+    }
+      
     Rectangle dest;
     dest.x = GetMouseX() * GetWindowScaleDPI().x;
     dest.y = GetMouseY() * GetWindowScaleDPI().y;
@@ -259,6 +374,10 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
   } else if (IsKeyPressed(KEY_Y)) {
     SetMode(EditMode::kSerialize);
   }
+  
+  if (!is_box_select_) {
+    box_select_anchor_ = {};
+  }
 
   if (GetCurrentMode() == EditMode::kGridEdit) {
     if (IsKeyPressed(KEY_ENTER)) {
@@ -268,6 +387,8 @@ void LevelEditor::UpdateEditor(std::vector<Tile>& grid) {
     }
   }
 
+  is_box_select_ = (current_mode_ == EditMode::kPaint) && IsKeyDown(KEY_LEFT_CONTROL);
+  
   switch (serialize_state_) {
     case SerializationState::Save: {
       Save(grid);
