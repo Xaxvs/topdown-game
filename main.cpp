@@ -82,28 +82,6 @@ int main() {
         BeginMode2D(editor.GetCamera());
         editor.DrawTileMap(grid, tilemap);        
 
-        // for (int i = 0; i < grid.size(); ++i) {
-        //     Tile tile = grid[i];
-        //     int x = i % grid_width;
-        //     int y = i / grid_width;
-
-        //     Rectangle source {
-        //         (float)tile.texture_col_ * kGridSize,
-        //         (float)tile.texture_row_ * kGridSize,
-        //         kGridSize,
-        //         kGridSize
-        //     };
-
-        //     Rectangle dest {
-        //        (float)x * kGridSize,
-        //        (float)y * kGridSize,
-        //        kGridSize,
-        //        kGridSize
-        //     };
-
-        //     DrawTexturePro(tilemap, source, dest, Vector2 { 0.0, 0.0 }, 0.0f, WHITE);
-        // }
-
         player.Draw(tilemap);
         
         for (auto& [shape, body] : balls) {
