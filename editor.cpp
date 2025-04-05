@@ -75,8 +75,15 @@ void LevelEditor::TileSelect(struct nk_context* ctx) {
       nk_window_get_scroll(ctx, &offset_x, &offset_y);
 
       struct nk_command_buffer* canvas = nk_window_get_canvas(ctx);
+
+      //row and column should be switched -- row is vertical, column is horizontal
+      // this is cursed
       for (int row = 0; row < kNumFramesHorizontal; ++row) {
         for (int col = 0; col < kNumFramesVertical; ++col) {
+
+          //User can't select the blank spaces of the tilemap
+          if (row >= 8 && col >= 8) continue;
+          
           struct nk_rect frame = nk_rect(row * kSpriteWidth, col * kSpriteHeight, kSpriteWidth, kSpriteHeight);
           frame.x += content_region.x - offset_x;
           frame.y += content_region.y - offset_y;

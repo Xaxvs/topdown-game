@@ -28,7 +28,7 @@ int main() {
     std::vector<Tile> grid;
     grid.resize(1);
     
-    editor.Load("dummylevel.txt", grid);
+    editor.Load("bettertest.txt", grid);
     int grid_width = editor.GetGridWidth();
     int grid_height = editor.GetGridHeight();
     
