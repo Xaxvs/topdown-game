@@ -41,7 +41,8 @@ public:
   int GetY() const;
   int SetX(int value);
   int SetY(int value);
-  void Attack(Enemies& enemies);
+  void Attack(Enemies &enemies);
+  int& GetMoney();
 
 private:
   float ray_angle_{};
@@ -51,6 +52,7 @@ private:
   float x_{}, y_{}, vel_x_{}, vel_y_{};
   int width_, height_;
   float attack_cooldown_{};
+  int money_;
 
 };
 

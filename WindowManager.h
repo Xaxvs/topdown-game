@@ -6,18 +6,19 @@
 #define WINDOWMANAGER_H
 #include "MainMenu.h"
 #include "Pause.h"
+#include "Shop.h"
 
 class WindowManager {
 
 public:
-  explicit WindowManager(nk_context *ctx) : ctx_(ctx), main_menu_(MainMenu(ctx, draw_window_)), pause_(Pause(ctx)) {
+  explicit WindowManager(nk_context *ctx, Shop& shop) : ctx_(ctx), main_menu_(MainMenu(ctx, draw_window_)), pause_(Pause(ctx)), shop_(shop) {
     const Texture2D texture = LoadTexture("../assets/kenney_scribble-dungeons/PNG/Double (128px)/coffin.png");
     img_ = TextureToNuklear(texture);
     rect_ = {0, 0, 800, 600};
   }
 
   void Update() {
-    if(!draw_window_ && !pause_.IsPaused()) return;
+    if(!draw_window_ && !pause_.IsPaused() && !shop_.isOpen()) return;
     UpdateNuklear(ctx_);
 
     if (nk_begin(ctx_, "", nk_rect(0, 0, 800, 600), NK_FIXED)) {
@@ -27,6 +28,7 @@ public:
       nk_draw_image(buf, rect_, &img_, ColorToNuklear(WHITE));
       if(draw_window_) main_menu_.Draw();
       if(pause_.IsPaused()) pause_.DrawPauseMenu(draw_window_, main_menu_.GetMenuValue());
+      if(shop_.isOpen()) shop_.Draw();
     }
     nk_end(ctx_);
 
@@ -35,9 +37,8 @@ public:
 
   bool DrawWindow() const { return draw_window_; }
 
-  Pause& GetPauseMenu() {
-    return pause_;
-  }
+  Pause& GetPauseMenu() { return pause_; }
+  Shop& GetShop() { return shop_; }
 
 private:
   bool draw_window_ = true;
@@ -46,6 +47,7 @@ private:
   struct nk_rect rect_ {};
   MainMenu main_menu_;
   Pause pause_;
+  Shop& shop_;
 };
 
 #endif // WINDOWMANAGER_H

@@ -23,6 +23,11 @@ int Player::SetX(const int value) { return x_ = value; }
 
 int Player::SetY(const int value) { return y_ = value; }
 
+int &Player::GetMoney() {
+  return money_;
+}
+
+
 void Player::Attack(Enemies& enemies) {
 
   Vector2 char_pos = {float(x_ + width_ / 2), float(y_ - height_ / 2)};
