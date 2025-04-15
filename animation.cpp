@@ -61,7 +61,7 @@ void Animation::Update() {
   if (time_ >= frames_per_second) {
     time_ = 0.0f;
     ++current_frame_;
-    if (current_frame_ >= frame_end_) {
+    if (current_frame_ > frame_end_) {
       current_frame_ = frame_start_;
     }
   }
@@ -105,4 +105,12 @@ void Animation::SetFrameStart(int start) {
 
 void Animation::SetFrameEnd(int end) {
   frame_end_ = Clamp(end, 0, frame_count_ - 1);
+}
+
+int Animation::GetFrameStart() const {
+  return frame_start_;
+}
+
+int Animation::GetFrameEnd() const {
+  return frame_end_;  
 }

@@ -111,6 +111,12 @@ void Player::Draw(Texture2D tilemap) {
     case PlayerStates::IState::kIStateIdle:
       DrawText("Idle", 0, 0, 24, BLACK);
       break;
+    case PlayerStates::IState::kIAttack2State:
+      DrawText("Attack 2", 0, 0, 24, BLACK);
+      break;
+    case PlayerStates::IState::kIAttack3State:
+      DrawText("Attack 3", 0, 0, 24, BLACK);
+      break;
   }
 }
 

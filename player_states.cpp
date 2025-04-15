@@ -10,9 +10,13 @@ PlayerStates::PlayerStates(Player* player)
 {
   idle_.manager_ = this;
   attack_.manager_ = this;
+  attack2_.manager_ = this;
+  attack3_.manager_ = this;
 
   idle_.player_ = player;
   attack_.player_ = player;
+  attack2_.player_ = player;
+  attack3_.player_ = player;
   
   current_state_ = &idle_;
   current_state_type_ = IState::kIStateIdle;
@@ -34,6 +38,12 @@ void PlayerStates::Switch(PlayerStates::IState state) {
       break;
     case IState::kIStateIdle:
       current_state_ = &idle_;
+      break;
+    case IState::kIAttack2State:
+      current_state_ = &attack2_;
+      break;
+    case IState::kIAttack3State:
+      current_state_ = &attack3_;
       break;
   }
 
@@ -65,6 +75,10 @@ void IdleState::OnEnter() {
 }
 
 void IdleState::OnUpdate() {
+
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.Update();
+  
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     manager_->Switch(PlayerStates::IState::kIAttackState);
   }
@@ -135,13 +149,14 @@ void IdleState::OnExit() {
 void AttackState::OnEnter() {
   Animation& anim = manager_->GetAttackAnimation();
   anim.SetFrameStart(0);
-  anim.SetFrameEnd(17);
+  anim.SetFrameEnd(3);
+  attack2_ = false;
 }
 
 void AttackState::OnUpdate() {
   Animation& anim = manager_->GetAttackAnimation();
   anim.Update();
-
+  
   if (anim.GetCurrentFrame() == 8) {
     b2BodyId id = player_->GetPlayerBody();
     
@@ -149,17 +164,83 @@ void AttackState::OnUpdate() {
     
     Vector2 direction = { cosf(heading), sinf(heading) };
     direction = Vector2Normalize(direction);
-    direction = Vector2Scale(direction, 100.f);
+    direction = Vector2Scale(direction, 2.5f);
     
     b2Body_ApplyLinearImpulseToCenter(id, b2Vec(direction), true);
   }
+
+  if (!IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && anim.GetCurrentFrame() < 3) {
+    anim.SetFrameStart(3);
+    anim.SetFrameEnd(5);
+
+    b2BodyId id = player_->GetPlayerBody();
+    b2Body_SetLinearVelocity(id, b2Vec2_zero);
+    
+  } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && anim.GetCurrentFrame() <= 5) {
+    anim.SetFrameStart(5);
+    anim.SetFrameEnd(16);
+  }
+
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && anim.GetCurrentFrame() >= 7) {
+    attack2_ = true;
+  }
   
-  if (anim.GetCurrentFrame() >= 16) {
+  if (anim.GetCurrentFrame() >= 16 && !attack2_) {
     manager_->Switch(PlayerStates::IState::kIStateIdle);
+  } else if (anim.GetCurrentFrame() >= 16 && attack2_) {
+    manager_->Switch(PlayerStates::IState::kIAttack2State);
   }
 }
 
 void AttackState::OnDraw(Vector2 position, Vector2 origin, Vector2 size, float rotation) {
   Animation& anim = manager_->GetAttackAnimation();
   anim.Draw(position, origin, size, rotation);
+}
+
+void AttackState2::OnEnter() {
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.SetFrameStart(18);
+  anim.SetFrameEnd(24);
+
+  attack3_ = false;
+}
+
+void AttackState2::OnUpdate() {
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.Update();
+
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    attack3_ = true;
+  }
+    
+  if (anim.GetCurrentFrame() >= anim.GetFrameEnd() && !attack3_) {
+    manager_->Switch(PlayerStates::IState::kIStateIdle);
+  } else if (anim.GetCurrentFrame() >= anim.GetFrameEnd() && attack3_){
+    manager_->Switch(PlayerStates::IState::kIAttack3State);
+  }
+}
+
+void AttackState2::OnDraw(Vector2 position, Vector2 origin, Vector2 size, float rotation) {
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.Draw(position, origin, size, rotation);  
+}
+
+void AttackState3::OnEnter() {
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.SetFrameStart(24);
+  anim.SetFrameEnd(37);
+}
+
+void AttackState3::OnUpdate() {
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.Update();
+  
+  if (anim.GetCurrentFrame() >= anim.GetFrameEnd()) {
+    manager_->Switch(PlayerStates::IState::kIStateIdle);
+  }
+}
+
+void AttackState3::OnDraw(Vector2 position, Vector2 origin, Vector2 size, float rotation) {
+  Animation& anim = manager_->GetAttackAnimation();
+  anim.Draw(position, origin, size, rotation);  
 }

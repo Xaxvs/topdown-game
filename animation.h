@@ -20,6 +20,9 @@ public:
 
   void SetFrameStart(int start);
   void SetFrameEnd(int end);
+
+  int GetFrameStart() const;
+  int GetFrameEnd() const;
   
   void Draw(Vector2 position, Vector2 origin, Vector2 size, float rotation);
 private:
