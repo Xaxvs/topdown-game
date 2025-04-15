@@ -4,54 +4,42 @@
 #include <raylib.h>
 #include <box2d/box2d.h>
 
-#include <string>
-
 #include "Enemies.h"
+
+#include "player_states.h"
 
 constexpr long kDefaultAttackCooldown = 1;
 
-enum class ItemType { SHIELD, WEAPON };
-
-struct Item {
-  std::string name_;
-  int damage_;
-  int cost_;
-  ItemType type_;
-};
-
 class Player {
 public:
-  Player(b2WorldId world, const std::string &display_name, int width, int height);
+  Player(b2WorldId world, int width, int height);
+  ~Player() = default;
 public:
-  const std::string& GetDisplayName() const;
   void Update();
   
   void Draw(Texture2D tilemap);
   
-  Item& GetWeapon();
-  Item& GetShield();
-  void SetWeapon(const Item& weapon);
-  void SetShield(const Item& shield);
   void Attack(Enemies& enemies);
 
   void SetPosition(Vector2 position);
   Vector2 GetPosition() const;
 
   float GetHeading(void) const;
+  void SetHeading(float heading);
+
+  b2BodyId GetPlayerBody() const;
 private:
+  PlayerStates states_;
+  
   Rectangle player_texture_;
   Rectangle hand_texture_;
+  Rectangle sword_texture_;
 
   b2BodyId player_body_;
   b2ShapeId player_shape_;
-
   
   float ray_angle_{};
-  std::string display_name_;
-  
-  Item weapon_;
-  Item shield_;
-  
+    
   Vector2 position_;
   Vector2 velocity_;
 

@@ -32,7 +32,7 @@ int main() {
     int grid_width = editor.GetGridWidth();
     int grid_height = editor.GetGridHeight();
     
-    Player player(physics.GetWorld(), "Steve", 64, 64);
+    Player player(physics.GetWorld(), 64, 64);
         
     std::vector<std::tuple<b2ShapeId, b2BodyId>> balls;
     

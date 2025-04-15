@@ -31,6 +31,9 @@ Animation::Animation(
     (float)spritesheet_.width / (float)frames_horizontal,
     (float)spritesheet_.height / (float)frames_vertical
   };
+
+  frame_start_ = 0;
+  frame_end_ = frame_count - 1;
 }
 
 Animation::Animation(Animation&& other){
@@ -58,8 +61,8 @@ void Animation::Update() {
   if (time_ >= frames_per_second) {
     time_ = 0.0f;
     ++current_frame_;
-    if (current_frame_ >= frame_count_) {
-      current_frame_ = 0;
+    if (current_frame_ >= frame_end_) {
+      current_frame_ = frame_start_;
     }
   }
 
@@ -71,7 +74,7 @@ void Animation::Update() {
 }
 
 void Animation::SetFrame(int frame) {
-  frame = Clamp(frame, 0, frame_count_);
+  frame = Clamp(frame, frame_start_, frame_end_);
   current_frame_ = frame;
   time_ = 0.0f;
 }
@@ -89,4 +92,17 @@ void Animation::Draw(Vector2 position, Vector2 origin, Vector2 size, float rotat
     rotation * RAD2DEG,
     WHITE
   );
+}
+
+int Animation::GetFrameCount() const {
+  return frame_count_;
+}
+
+void Animation::SetFrameStart(int start) {
+  frame_start_ = Clamp(start, 0, frame_count_ - 1);
+  current_frame_ = frame_start_;
+}
+
+void Animation::SetFrameEnd(int end) {
+  frame_end_ = Clamp(end, 0, frame_count_ - 1);
 }

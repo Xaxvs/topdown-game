@@ -16,11 +16,18 @@ public:
   
   void SetFrame(int frame);
   int GetCurrentFrame() const;
+  int GetFrameCount() const;
+
+  void SetFrameStart(int start);
+  void SetFrameEnd(int end);
   
   void Draw(Vector2 position, Vector2 origin, Vector2 size, float rotation);
 private:
   Texture2D spritesheet_;
   Rectangle source_;
+
+  int frame_start_;
+  int frame_end_;
 
   int current_frame_;
   int frames_horizontal_;

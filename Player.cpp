@@ -6,10 +6,9 @@
 
 #include "units.h"
 
-Player::Player(b2WorldId world, const std::string& display_name, int width, int height) {
-  display_name_ = display_name;
-  weapon_ = Item { "Default Knife", 10, 5, ItemType::WEAPON };
-  shield_ = Item { "Default Chestplate", 10, 5, ItemType::SHIELD };
+Player::Player(b2WorldId world, int width, int height)
+  : states_(this)
+{
   width_ = width;
   height_ = height;
 
@@ -27,6 +26,12 @@ Player::Player(b2WorldId world, const std::string& display_name, int width, int 
     kGridSize * 8,
     kGridSize,
     kGridSize  
+  };
+
+  sword_texture_ = Rectangle {
+    kGridSize * 2,    kGridSize * 9,
+    kGridSize,
+    kGridSize
   };
 
   target_angle_ = 0.0f;
@@ -49,15 +54,9 @@ Player::Player(b2WorldId world, const std::string& display_name, int width, int 
   current_angle_ = 0.0f;
 }
 
-const std::string& Player::GetDisplayName() const { return display_name_; }
-
-Item& Player::GetShield() { return shield_; }
-
-Item& Player::GetWeapon() { return weapon_; }
-
-void Player::SetShield(const Item& shield) { shield_ = shield; }
-
-void Player::SetWeapon(const Item& weapon) { weapon_ = weapon; }
+b2BodyId Player::GetPlayerBody() const {
+  return player_body_;
+}
 
 void Player::SetPosition(Vector2 position) {
   position_ = position;
@@ -85,7 +84,7 @@ void Player::Attack(Enemies& enemies) {
       DrawRectangle(x, y, 2, 2, BLACK);
 
       if (auto enemy = enemies.GetEnemyAt(x, y); enemy.has_value()) {
-        enemies.AttackEnemy(enemy.value(), GetWeapon().damage_, x, y);
+        // enemies.AttackEnemy(enemy.value(), GetWeapon().damage_, x, y);
         attack_cooldown_ = kDefaultAttackCooldown;
       }
       traveled++;
@@ -99,116 +98,28 @@ void Player::Attack(Enemies& enemies) {
 }
 
 void Player::Update() {
-  b2Vec2 input = b2Vec2_zero;
-  if (IsKeyDown(KEY_W)) {
-    input.y -= 1.0;
-  }
-  
-  if (IsKeyDown(KEY_A)) {
-    input.x -= 1.0;
-  }
-  
-  if (IsKeyDown(KEY_S)) {
-    input.y += 1.0;
-  }
-  
-  if (IsKeyDown(KEY_D)) {
-    input.x += 1.0;
-  }
-
-  input = b2Normalize(input);
-
-  float input_length = b2Length(input);
-
-  if (input_length > 0.f) {
-    target_angle_ = atan2(input.y, input.x);
-    target_angle_ = Wrap(target_angle_, -PI, PI);
-  }
-  
-  float delta = target_angle_ - current_angle_;
-  if (delta > PI) {
-    current_angle_ += 2 * PI;
-  } else if (delta < -PI) {
-    current_angle_ -= 2 * PI;
-  }
-
-  current_angle_ = Lerp(current_angle_, target_angle_, 0.1);
-  current_angle_ = Wrap(current_angle_, -PI, PI);
-    
-  b2Vec2 current_velocity = b2Body_GetLinearVelocity(player_body_);
-  if (input_length > 0.f) {
-    float speed = 4.0f;
-    b2Vec2 new_velocity = b2Lerp(current_velocity, b2MulSV(speed, input), 0.1);
-    b2Body_SetLinearVelocity(player_body_, new_velocity);
-  } else {
-    b2Vec2 new_velocity = b2Lerp(current_velocity, b2Vec2_zero, 0.6);
-    b2Body_SetLinearVelocity(player_body_, new_velocity);
-  }
-
-  position_ = Vec(b2Body_GetPosition(player_body_));
+  SetPosition(Vec(b2Body_GetPosition(player_body_)));
+  states_.Update();
 }
 
-void Player::Draw(Texture2D tilemap) {
-  Rectangle player_rect = {
-    position_.x,
-    position_.y,
-    (float)width_,
-    (float)height_
-  };
-  
-  DrawTexturePro(
-    tilemap,
-    player_texture_,
-    player_rect,
-    { (float)width_ / 2, (float)height_ / 2 },
-    current_angle_ * RAD2DEG,
-    WHITE
-  );
-
-  float half_width = (float)width_ / 2;
-  float half_height= (float)width_ / 2;
-
-  Rectangle r_hand_rect {
-    position_.x - half_width,
-    position_.y - half_height,
-    (float)width_,
-    (float)height_
-  };
-
-  r_hand_rect.x += cosf(current_angle_ + PI/2) * 30.0;
-  r_hand_rect.y += sin(current_angle_ + PI/2) * 30.0;
-  
-  DrawTexturePro(
-    tilemap,
-    hand_texture_,
-    r_hand_rect,
-    {0.0, 0.0},
-    0.0,
-    WHITE
-  );
-  
-  Rectangle l_hand_rect {
-    position_.x - half_width,
-    position_.y - half_height,
-    (float)width_,
-    (float)height_
-  };
-
-  l_hand_rect.x -= cosf(current_angle_ + PI/2) * 30.0;
-  l_hand_rect.y -= sin(current_angle_ + PI/2) * 30.0;
-  
-  DrawTexturePro(
-    tilemap,
-    hand_texture_,
-    l_hand_rect,
-    {0.0, 0.0},
-    0.0,
-    WHITE
-  );
+void Player::Draw(Texture2D tilemap) {  
+  states_.Draw(position_, Vector2 { 32, 32 }, { 64, 64 }, current_angle_ + PI / 2);
+  switch (states_.GetCurrentState()) {
+    case PlayerStates::IState::kIAttackState:
+      DrawText("Attack 1", 0, 0, 24, BLACK);
+      break;
+    case PlayerStates::IState::kIStateIdle:
+      DrawText("Idle", 0, 0, 24, BLACK);
+      break;
+  }
 }
 
 float Player::GetHeading(void) const {
   return current_angle_;
+}
+
+void Player::SetHeading(float heading) {
+  current_angle_ = heading;
 }
 
 Vector2 Player::GetPosition() const {
