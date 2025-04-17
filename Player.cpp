@@ -2,8 +2,6 @@
 
 #include <raymath.h>
 
-#include <cmath>
-
 #include "units.h"
 
 Player::Player(b2WorldId world, int width, int height)
@@ -51,7 +49,9 @@ Player::Player(b2WorldId world, int width, int height)
   b2Circle circle = b2Circle { b2Vec2_zero, kDefaultRadius * kPixelToMeter };
   player_shape_ = b2CreateCircleShape(player_body_, &shape_def, &circle);
 
-  current_angle_ = 0.0f;
+  current_angle_ = 0.0f;  
+
+  lock_on_target_ = b2_nullBodyId;
 }
 
 b2BodyId Player::GetPlayerBody() const {
@@ -62,44 +62,27 @@ void Player::SetPosition(Vector2 position) {
   position_ = position;
 }
 
-void Player::Attack(Enemies& enemies) {
-  Vector2 char_pos = { position_.x + (float)width_ / 2, position_.y - (float)height_ / 2};
-  Vector2 mouse_pos = GetMousePosition();
-  float target_angle = std::atan2(char_pos.y - mouse_pos.y , char_pos.x - mouse_pos.x);
-
-  if (attack_cooldown_ <= 0 && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-
-    if (ray_angle_ > target_angle + PI / 4) {
-      attack_cooldown_ = kDefaultAttackCooldown;
-      ray_angle_ = target_angle - PI / 4;
-      return;
-    }
-
-    constexpr float maxDistance = 100.0f;
-    float x = char_pos.x, y = char_pos.y;
-    float traveled = 0.0f;
-    while (traveled < maxDistance) {
-      x -= std::cos(ray_angle_);
-      y -= std::sin(ray_angle_);
-      DrawRectangle(x, y, 2, 2, BLACK);
-
-      if (auto enemy = enemies.GetEnemyAt(x, y); enemy.has_value()) {
-        // enemies.AttackEnemy(enemy.value(), GetWeapon().damage_, x, y);
-        attack_cooldown_ = kDefaultAttackCooldown;
-      }
-      traveled++;
-    }
-    ray_angle_ += 0.009;
-  } else if(IsMouseButtonUp(MOUSE_BUTTON_LEFT) && ray_angle_ > 0.4) {
-    attack_cooldown_ = kDefaultAttackCooldown;
-    ray_angle_ = 0;
-  }
-  attack_cooldown_ -= GetFrameTime();
-}
-
 void Player::Update() {
   SetPosition(Vec(b2Body_GetPosition(player_body_)));
   states_.Update();
+
+  if (b2Body_IsValid(lock_on_target_)) {
+    Vector2 locked_pos = Vec(b2Body_GetPosition(lock_on_target_));
+    Vector2 dir = Vector2Subtract(position_, locked_pos);
+    dir = Vector2Normalize(dir);
+    
+    float intended = atan2(dir.y, dir.x) + PI;
+    intended = Wrap(intended, -PI, PI);
+    
+    float delta = intended - current_angle_;
+    if (delta < -PI) {
+      current_angle_ -= 2 * PI;
+    } else if (delta > PI) {
+      current_angle_ += 2 * PI;
+    }
+    
+    current_angle_ = Lerp(current_angle_, intended, 0.4);
+  }
 }
 
 void Player::Draw(Texture2D tilemap) {  
@@ -118,6 +101,13 @@ void Player::Draw(Texture2D tilemap) {
       DrawText("Attack 3", 0, 0, 24, BLACK);
       break;
   }
+  
+  DrawCircle(
+      position_.x,
+      position_.y,
+      256.0f,
+      { 0, 0, 255, 100 }
+  );
 }
 
 float Player::GetHeading(void) const {
@@ -130,4 +120,44 @@ void Player::SetHeading(float heading) {
 
 Vector2 Player::GetPosition() const {
   return position_;
+}
+
+bool IsOverlapping(b2ShapeId id, void* context) {        
+    Player* player = (Player*)context;
+    if (player == nullptr) return false;
+    
+    if (!b2Body_IsValid(player->GetLockedOnBody())) {
+      TraceLog(LOG_INFO, "OVERLAP");
+      player->SetLockedOnBody(b2Shape_GetBody(id));
+    } else {
+      b2Vec2 current_pos = b2Body_GetPosition(player->GetLockedOnBody());
+      b2Vec2 next_pos = b2Body_GetPosition(b2Shape_GetBody(id));
+      b2Vec2 player_pos = b2Vec(player->GetPosition());
+
+      float current_dist = b2LengthSquared(b2Sub(player_pos, current_pos));
+      float next_dist = b2LengthSquared(b2Sub(player_pos, next_pos));
+      if (next_dist < current_dist) {
+        player->SetLockedOnBody(b2Shape_GetBody(id));
+      }
+    }
+    
+    return true;
+}
+
+void Player::SetLockedOnBody(b2BodyId body) {
+  lock_on_target_ = body;
+}
+
+b2BodyId Player::GetLockedOnBody() {
+  return lock_on_target_;
+}
+
+void Player::LockOn(b2WorldId world) {
+  b2Circle lock_detection = { b2Vec(position_), 256.0 * kPixelToMeter };
+
+  b2QueryFilter filter = b2DefaultQueryFilter();
+  filter.categoryBits = 0x002;
+  filter.maskBits = 0x002;
+
+  b2World_OverlapCircle(world, &lock_detection, b2Transform_identity, filter, IsOverlapping, this);
 }

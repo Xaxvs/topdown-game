@@ -4,8 +4,6 @@
 #include <raylib.h>
 #include <box2d/box2d.h>
 
-#include "Enemies.h"
-
 #include "player_states.h"
 
 constexpr long kDefaultAttackCooldown = 1;
@@ -19,8 +17,6 @@ public:
   
   void Draw(Texture2D tilemap);
   
-  void Attack(Enemies& enemies);
-
   void SetPosition(Vector2 position);
   Vector2 GetPosition() const;
 
@@ -28,6 +24,11 @@ public:
   void SetHeading(float heading);
 
   b2BodyId GetPlayerBody() const;
+
+  void LockOn(b2WorldId world);
+
+  void SetLockedOnBody(b2BodyId body);
+  b2BodyId GetLockedOnBody();
 private:
   PlayerStates states_;
   
@@ -49,6 +50,7 @@ private:
   int width_, height_;
   float attack_cooldown_{};
 
+  b2BodyId lock_on_target_;
 };
 
 #endif // PLAYER_H

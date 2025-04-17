@@ -13,9 +13,10 @@ add_executable(
         Player.cpp
         units.cpp
         physics_world.cpp
-        Enemies.cpp
+        enemy.cpp
         animation.cpp
         player_states.cpp
+        dummy_enemy.cpp
 )
 
 target_include_directories(topdown_game PUBLIC lib/raylib/raylib/include box2d/include lib)

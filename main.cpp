@@ -9,6 +9,8 @@
 
 #include "units.h"
 
+#include "dummy_enemy.h"
+
 #include "Player.h"
 
 enum class Mode {
@@ -47,6 +49,8 @@ int main() {
     game_camera.target = player.GetPosition();
     game_camera.rotation = 0.0f;
     game_camera.offset = { 400.0f, 400.0f };
+
+    DummyEnemy dummy({ 192 + 32, 32 }, physics.GetWorld());
     
     while (!WindowShouldClose()) {
         UpdateNuklear(ctx);
@@ -87,12 +91,29 @@ int main() {
                 break;
             }
             case Mode::kModeGame: {                    
+
+                if (IsKeyPressed(KEY_TAB)) {
+                    if (b2Body_IsValid(player.GetLockedOnBody())) {
+                        player.SetLockedOnBody(b2_nullBodyId);
+                    } else {
+                        player.LockOn(physics.GetWorld());
+                    }
+                }
+                
                 player.Update();
                 
                 float screenHeight = GetScreenHeight();
                 float screenWidth = GetScreenWidth();
                 
-                game_camera.target = player.GetPosition();                
+                if (b2Body_IsValid(player.GetLockedOnBody())) {
+                    Vector2 locked_pos = Vec(b2Body_GetPosition(player.GetLockedOnBody()));
+                    Vector2 dist = Vector2Subtract(locked_pos, player.GetPosition());
+                    dist = Vector2Add(player.GetPosition(), Vector2Scale(dist, 0.5f));
+                    game_camera.target = Vector2Lerp(game_camera.target, dist, 0.05f);
+                } else {
+                    game_camera.target = Vector2Lerp(game_camera.target, player.GetPosition(), 0.5f);
+                }
+                
                 game_camera.offset = Vector2 { (float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f };
                 game_camera.offset.x *= GetWindowScaleDPI().x;
                 game_camera.offset.y *= GetWindowScaleDPI().y;
@@ -102,12 +123,17 @@ int main() {
                 editor.DrawTileMap(grid, tilemap);        
 
                 player.Draw(tilemap);
+
+                dummy.Draw();
                 
-                
-                DrawLine((int)game_camera.target.x, -screenHeight*10, (int)game_camera.target.x, screenHeight*10, GREEN);
-                DrawLine(-screenWidth*10, (int)game_camera.target.y, screenWidth*10, (int)game_camera.target.y, GREEN);
+                b2BodyId locked_on = player.GetLockedOnBody();
+                if (b2Body_IsValid(locked_on)) {
+                    Vector2 locked_pos = Vec(b2Body_GetPosition(locked_on));
+                    DrawCircle(locked_pos.x, locked_pos.y, 2.0f, WHITE);
+                }
+
                 EndMode2D();        
-                
+                                
                 break;
             }
         }

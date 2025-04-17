@@ -121,7 +121,9 @@ void IdleState::OnUpdate() {
   current_angle = Lerp(current_angle, target_angle_, 0.1);
   current_angle = Wrap(current_angle, -PI, PI);
 
-  player_->SetHeading(current_angle);
+  if (!b2Body_IsValid(player_->GetLockedOnBody())) {
+    player_->SetHeading(current_angle);
+  }
 
   b2BodyId player_body = player_->GetPlayerBody();
     
