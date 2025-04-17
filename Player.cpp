@@ -66,9 +66,15 @@ void Player::Update() {
   SetPosition(Vec(b2Body_GetPosition(player_body_)));
   states_.Update();
 
-  if (b2Body_IsValid(lock_on_target_)) {
+  if (b2Body_IsValid(lock_on_target_)) {    
     Vector2 locked_pos = Vec(b2Body_GetPosition(lock_on_target_));
     Vector2 dir = Vector2Subtract(position_, locked_pos);
+
+    if (Vector2LengthSqr(dir) >= 525000.0f) {
+      SetLockedOnBody(b2_nullBodyId);
+      return;
+    }
+    
     dir = Vector2Normalize(dir);
     
     float intended = atan2(dir.y, dir.x) + PI;
@@ -102,12 +108,12 @@ void Player::Draw(Texture2D tilemap) {
       break;
   }
   
-  DrawCircle(
-      position_.x,
-      position_.y,
-      256.0f,
-      { 0, 0, 255, 100 }
-  );
+  // DrawCircle(
+  //     position_.x,
+  //     position_.y,
+  //     256.0f,
+  //     { 0, 0, 255, 100 }
+  // );
 }
 
 float Player::GetHeading(void) const {
@@ -127,8 +133,8 @@ bool IsOverlapping(b2ShapeId id, void* context) {
     if (player == nullptr) return false;
     
     if (!b2Body_IsValid(player->GetLockedOnBody())) {
-      TraceLog(LOG_INFO, "OVERLAP");
       player->SetLockedOnBody(b2Shape_GetBody(id));
+      player->PushLockedOnTarget(b2Shape_GetBody(id));
     } else {
       b2Vec2 current_pos = b2Body_GetPosition(player->GetLockedOnBody());
       b2Vec2 next_pos = b2Body_GetPosition(b2Shape_GetBody(id));
@@ -139,12 +145,16 @@ bool IsOverlapping(b2ShapeId id, void* context) {
       if (next_dist < current_dist) {
         player->SetLockedOnBody(b2Shape_GetBody(id));
       }
+      player->PushLockedOnTarget(b2Shape_GetBody(id));
     }
     
     return true;
 }
 
 void Player::SetLockedOnBody(b2BodyId body) {
+  if (!b2Body_IsValid(body)) {
+    locked_on_targets_.clear();
+  }
   lock_on_target_ = body;
 }
 
@@ -160,4 +170,12 @@ void Player::LockOn(b2WorldId world) {
   filter.maskBits = 0x002;
 
   b2World_OverlapCircle(world, &lock_detection, b2Transform_identity, filter, IsOverlapping, this);
+}
+
+void Player::PushLockedOnTarget(b2BodyId target) {
+  locked_on_targets_.push_back(target);
+}
+
+const std::vector<b2BodyId>& Player::GetTargetsInRange() const {
+  return locked_on_targets_;
 }

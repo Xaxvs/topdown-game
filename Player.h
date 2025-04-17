@@ -4,6 +4,8 @@
 #include <raylib.h>
 #include <box2d/box2d.h>
 
+#include <vector>
+
 #include "player_states.h"
 
 constexpr long kDefaultAttackCooldown = 1;
@@ -28,7 +30,10 @@ public:
   void LockOn(b2WorldId world);
 
   void SetLockedOnBody(b2BodyId body);
+  void PushLockedOnTarget(b2BodyId target);
   b2BodyId GetLockedOnBody();
+
+  const std::vector<b2BodyId>& GetTargetsInRange() const;
 private:
   PlayerStates states_;
   
@@ -51,6 +56,7 @@ private:
   float attack_cooldown_{};
 
   b2BodyId lock_on_target_;
+  std::vector<b2BodyId> locked_on_targets_;
 };
 
 #endif // PLAYER_H

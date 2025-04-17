@@ -8,6 +8,9 @@
 class DummyEnemy : public Enemy {
 public:
   DummyEnemy(Vector2 position, b2WorldId world);
+  DummyEnemy(DummyEnemy& other);
+  DummyEnemy(DummyEnemy&& other);
+  
   ~DummyEnemy();
   
   void Update() override;
@@ -19,5 +22,7 @@ private:
   Texture2D sprite_;
   b2BodyId body_;
   b2ShapeId shape_;
+
+  bool unload_;
 };
 #endif

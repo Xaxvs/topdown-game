@@ -18,10 +18,35 @@ DummyEnemy::DummyEnemy(Vector2 position, b2WorldId world) {
   
   b2Polygon polygon = b2MakeBox(32.0f * kPixelToMeter, 32.0f * kPixelToMeter);
   shape_ = b2CreatePolygonShape(body_, &shape_def, &polygon);
+
+  unload_ = true;
+}
+
+DummyEnemy::DummyEnemy(DummyEnemy& other) {
+  sprite_ = other.sprite_;
+  body_ = other.body_;
+  shape_ = other.shape_;
+  SetPosition(other.GetPosition());
+  
+  unload_ = true;
+  
+  other.unload_ = false;
+}
+
+DummyEnemy::DummyEnemy(DummyEnemy&& other) {
+  sprite_ = other.sprite_;
+  body_ = other.body_;
+  shape_ = other.shape_;
+  SetPosition(other.GetPosition());
+  
+  unload_ = true;
+  other.unload_ = false;
 }
 
 DummyEnemy::~DummyEnemy() {
-  UnloadTexture(sprite_);
+  if (unload_) {
+    UnloadTexture(sprite_);
+  }
 }
 
 void DummyEnemy::Update() {

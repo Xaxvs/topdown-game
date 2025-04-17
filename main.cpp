@@ -50,7 +50,10 @@ int main() {
     game_camera.rotation = 0.0f;
     game_camera.offset = { 400.0f, 400.0f };
 
-    DummyEnemy dummy({ 192 + 32, 32 }, physics.GetWorld());
+    std::vector<DummyEnemy> dummies;
+    dummies.emplace_back(DummyEnemy(Vector2 { 192 + 32, 32 }, physics.GetWorld()));
+    dummies.emplace_back(DummyEnemy(Vector2 { 192 + 32, -128 }, physics.GetWorld()));
+    dummies.emplace_back(DummyEnemy(Vector2 { 192 + 128, -64 }, physics.GetWorld()));
     
     while (!WindowShouldClose()) {
         UpdateNuklear(ctx);
@@ -99,6 +102,58 @@ int main() {
                         player.LockOn(physics.GetWorld());
                     }
                 }
+
+                if (IsKeyPressed(KEY_RIGHT) && b2Body_IsValid(player.GetLockedOnBody())) {
+                    b2BodyId current = player.GetLockedOnBody();
+                    
+                    float min_angle = 2 * PI;
+                    b2BodyId min_angle_body = b2_nullBodyId;
+                    
+                    for (b2BodyId target : player.GetTargetsInRange()) {
+                        if (B2_ID_EQUALS(target, current)) continue;
+                        Vector2 target_pos = Vec(b2Body_GetPosition(target));
+                        Vector2 diff = Vector2Subtract(target_pos, player.GetPosition());
+                        diff = Vector2Normalize(diff);
+                        
+                        float angle_to_target = atan2(diff.y, diff.x);
+                        angle_to_target = Wrap(angle_to_target, -PI, PI);
+
+                        if (angle_to_target > player.GetHeading() && angle_to_target < min_angle) {
+                            angle_to_target = min_angle;
+                            min_angle_body = target;
+                        }
+                    }
+
+                    if (b2Body_IsValid(min_angle_body)) {
+                        player.SetLockedOnBody(min_angle_body);
+                    }
+                }
+                
+                if (IsKeyPressed(KEY_LEFT) && b2Body_IsValid(player.GetLockedOnBody())) {
+                    b2BodyId current = player.GetLockedOnBody();
+                    
+                    float min_angle = 2 * PI;
+                    b2BodyId min_angle_body = b2_nullBodyId;
+                    
+                    for (b2BodyId target : player.GetTargetsInRange()) {
+                        if (B2_ID_EQUALS(target, current)) continue;
+                        Vector2 target_pos = Vec(b2Body_GetPosition(target));
+                        Vector2 diff = Vector2Subtract(target_pos, player.GetPosition());
+                        diff = Vector2Normalize(diff);
+                        
+                        float angle_to_target = atan2(diff.y, diff.x);
+                        angle_to_target = Wrap(angle_to_target, -PI, PI);
+
+                        if (angle_to_target < player.GetHeading() && angle_to_target < min_angle) {
+                            angle_to_target = min_angle;
+                            min_angle_body = target;
+                        }
+                    }
+
+                    if (b2Body_IsValid(min_angle_body)) {
+                        player.SetLockedOnBody(min_angle_body);
+                    }
+                }
                 
                 player.Update();
                 
@@ -124,7 +179,9 @@ int main() {
 
                 player.Draw(tilemap);
 
-                dummy.Draw();
+                for (DummyEnemy& dummy : dummies) {
+                    dummy.Draw();
+                }
                 
                 b2BodyId locked_on = player.GetLockedOnBody();
                 if (b2Body_IsValid(locked_on)) {
