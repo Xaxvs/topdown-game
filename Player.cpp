@@ -89,6 +89,8 @@ void Player::Update() {
     
     current_angle_ = Lerp(current_angle_, intended, 0.4);
   }
+
+  CycleLockOn();
 }
 
 void Player::Draw(Texture2D tilemap) {  
@@ -178,4 +180,62 @@ void Player::PushLockedOnTarget(b2BodyId target) {
 
 const std::vector<b2BodyId>& Player::GetTargetsInRange() const {
   return locked_on_targets_;
+}
+
+void Player::CycleLockOn() {
+    if (IsKeyPressed(KEY_E) && b2Body_IsValid(GetLockedOnBody())) {
+        b2BodyId current = GetLockedOnBody();
+    
+        float min_delta = std::numeric_limits<float>().max();
+        b2BodyId min_angle_body = b2_nullBodyId;
+    
+        for (b2BodyId target : GetTargetsInRange()) {
+            if (B2_ID_EQUALS(target, current)) continue;
+            Vector2 target_pos = Vec(b2Body_GetPosition(target));
+            Vector2 diff = Vector2Subtract(target_pos, GetPosition());
+            diff = Vector2Normalize(diff);
+        
+            float angle_to_target = atan2(diff.y, diff.x);
+            angle_to_target = Wrap(angle_to_target, -PI, PI);
+
+            float delta = fabs(GetHeading() - angle_to_target);
+
+            if (angle_to_target > GetHeading() && delta < min_delta) {
+                min_delta = delta;
+                min_angle_body = target;
+            }
+        }
+
+        if (b2Body_IsValid(min_angle_body)) {
+            SetLockedOnBody(min_angle_body);
+        }
+    }
+
+    if (IsKeyPressed(KEY_Q) && b2Body_IsValid(GetLockedOnBody())) {
+        b2BodyId current = GetLockedOnBody();
+    
+        float min_delta = std::numeric_limits<float>().max();
+        b2BodyId min_angle_body = b2_nullBodyId;
+    
+        for (b2BodyId target : GetTargetsInRange()) {
+            if (B2_ID_EQUALS(target, current)) continue;
+            Vector2 target_pos = Vec(b2Body_GetPosition(target));
+            Vector2 diff = Vector2Subtract(target_pos, GetPosition());
+            diff = Vector2Normalize(diff);
+        
+            float angle_to_target = atan2(diff.y, diff.x);
+            angle_to_target = Wrap(angle_to_target, -PI, PI);
+
+            float delta = fabs(GetHeading() - angle_to_target);
+
+            if (angle_to_target < GetHeading() && delta < min_delta) {
+                min_delta = delta;
+                min_angle_body = target;
+            }
+        }
+
+        if (b2Body_IsValid(min_angle_body)) {
+            SetLockedOnBody(min_angle_body);
+        }
+    }
 }

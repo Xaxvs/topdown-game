@@ -27,6 +27,8 @@ public:
 
   b2BodyId GetPlayerBody() const;
 
+  void CycleLockOn();
+  
   void LockOn(b2WorldId world);
 
   void SetLockedOnBody(b2BodyId body);

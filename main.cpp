@@ -102,62 +102,6 @@ int main() {
                         player.LockOn(physics.GetWorld());
                     }
                 }
-
-                if (IsKeyPressed(KEY_RIGHT) && b2Body_IsValid(player.GetLockedOnBody())) {
-                    b2BodyId current = player.GetLockedOnBody();
-                    
-                    float min_delta = std::numeric_limits<float>().max();
-                    b2BodyId min_angle_body = b2_nullBodyId;
-                    
-                    for (b2BodyId target : player.GetTargetsInRange()) {
-                        if (B2_ID_EQUALS(target, current)) continue;
-                        Vector2 target_pos = Vec(b2Body_GetPosition(target));
-                        Vector2 diff = Vector2Subtract(target_pos, player.GetPosition());
-                        diff = Vector2Normalize(diff);
-                        
-                        float angle_to_target = atan2(diff.y, diff.x);
-                        angle_to_target = Wrap(angle_to_target, -PI, PI);
-
-                        float delta = fabs(player.GetHeading() - angle_to_target);
-
-                        if (angle_to_target > player.GetHeading() && delta < min_delta) {
-                            min_delta = delta;
-                            min_angle_body = target;
-                        }
-                    }
-
-                    if (b2Body_IsValid(min_angle_body)) {
-                        player.SetLockedOnBody(min_angle_body);
-                    }
-                }
-                
-                if (IsKeyPressed(KEY_LEFT) && b2Body_IsValid(player.GetLockedOnBody())) {
-                    b2BodyId current = player.GetLockedOnBody();
-                    
-                    float min_delta = std::numeric_limits<float>().max();
-                    b2BodyId min_angle_body = b2_nullBodyId;
-                    
-                    for (b2BodyId target : player.GetTargetsInRange()) {
-                        if (B2_ID_EQUALS(target, current)) continue;
-                        Vector2 target_pos = Vec(b2Body_GetPosition(target));
-                        Vector2 diff = Vector2Subtract(target_pos, player.GetPosition());
-                        diff = Vector2Normalize(diff);
-                        
-                        float angle_to_target = atan2(diff.y, diff.x);
-                        angle_to_target = Wrap(angle_to_target, -PI, PI);
-
-                        float delta = fabs(player.GetHeading() - angle_to_target);
-
-                        if (angle_to_target < player.GetHeading() && delta < min_delta) {
-                            min_delta = delta;
-                            min_angle_body = target;
-                        }
-                    }
-
-                    if (b2Body_IsValid(min_angle_body)) {
-                        player.SetLockedOnBody(min_angle_body);
-                    }
-                }
                 
                 player.Update();
                 
