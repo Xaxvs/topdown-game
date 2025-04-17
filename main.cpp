@@ -106,7 +106,7 @@ int main() {
                 if (IsKeyPressed(KEY_RIGHT) && b2Body_IsValid(player.GetLockedOnBody())) {
                     b2BodyId current = player.GetLockedOnBody();
                     
-                    float min_angle = 2 * PI;
+                    float min_delta = std::numeric_limits<float>().max();
                     b2BodyId min_angle_body = b2_nullBodyId;
                     
                     for (b2BodyId target : player.GetTargetsInRange()) {
@@ -118,8 +118,10 @@ int main() {
                         float angle_to_target = atan2(diff.y, diff.x);
                         angle_to_target = Wrap(angle_to_target, -PI, PI);
 
-                        if (angle_to_target > player.GetHeading() && angle_to_target < min_angle) {
-                            angle_to_target = min_angle;
+                        float delta = fabs(player.GetHeading() - angle_to_target);
+
+                        if (angle_to_target > player.GetHeading() && delta < min_delta) {
+                            min_delta = delta;
                             min_angle_body = target;
                         }
                     }
@@ -132,7 +134,7 @@ int main() {
                 if (IsKeyPressed(KEY_LEFT) && b2Body_IsValid(player.GetLockedOnBody())) {
                     b2BodyId current = player.GetLockedOnBody();
                     
-                    float min_angle = 2 * PI;
+                    float min_delta = std::numeric_limits<float>().max();
                     b2BodyId min_angle_body = b2_nullBodyId;
                     
                     for (b2BodyId target : player.GetTargetsInRange()) {
@@ -144,8 +146,10 @@ int main() {
                         float angle_to_target = atan2(diff.y, diff.x);
                         angle_to_target = Wrap(angle_to_target, -PI, PI);
 
-                        if (angle_to_target < player.GetHeading() && angle_to_target < min_angle) {
-                            angle_to_target = min_angle;
+                        float delta = fabs(player.GetHeading() - angle_to_target);
+
+                        if (angle_to_target < player.GetHeading() && delta < min_delta) {
+                            min_delta = delta;
                             min_angle_body = target;
                         }
                     }
